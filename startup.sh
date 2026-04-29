@@ -204,9 +204,9 @@ install_apache() {
     if [[ "$OS" == "debian" ]]; then
         apt install -y apache2 libapache2-mod-php${PHP_VERSION}
 
-        a2enmod rewrite ssl headers proxy_fcgi setenvif
-        a2enmod php${PHP_VERSION}
-        a2enconf php${PHP_VERSION}-fpm
+        /usr/sbin/a2enmod rewrite ssl headers proxy_fcgi setenvif
+        /usr/sbin/a2enmod php${PHP_VERSION}
+        /usr/sbin/a2enconf php${PHP_VERSION}-fpm
 
         log_success "Apache instalado"
     fi
