@@ -423,10 +423,10 @@ configure_firewall() {
     if [[ "$OS" == "debian" ]]; then
         apt install -y ufw
 
-        ufw --force enable
-        ufw allow 22/tcp
-        ufw allow 80/tcp
-        ufw allow 443/tcp
+        /usr/sbin/ufw --force enable
+        /usr/sbin/ufw allow 22/tcp
+        /usr/sbin/ufw allow 80/tcp
+        /usr/sbin/ufw allow 443/tcp
 
         log_success "Firewall configurado"
     fi
