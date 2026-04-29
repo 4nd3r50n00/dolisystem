@@ -1,0 +1,22 @@
+# Ignorar ficheiros sensíveis
+.dolibarr_db_credentials
+*.log
+
+# Ignorar caches do sistema
+.cache/
+.npm/
+.local/
+
+# Ignorar vscode
+.vscode-server/
+
+# Ignorar bash history
+.bash_history
+
+# Ficheiros de ambiente
+.env
+*.env
+
+# Backup
+*.bak
+*~
