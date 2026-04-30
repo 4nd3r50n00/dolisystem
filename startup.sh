@@ -447,6 +447,8 @@ start_services() {
     systemctl start apache2
 
     log_success "Serviços iniciados"
+
+systemctl restart apache2
 }
 
 # =============================================================================
