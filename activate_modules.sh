@@ -225,7 +225,14 @@ INSERT IGNORE INTO llx_rights_def (id, entity, libelle, module, module_position,
 (1406, 1, 'Export interventions', 'ficheinter', 10, 'commercial', 'r', 0, 'export', NULL, '1');
 
 -- ============================================
--- CONCEDER PERMISSÕES AO ADMIN
+-- ============================================
+-- PERMISSÕES - Contabilidade (compta/comptabilite)
+-- ============================================
+INSERT IGNORE INTO llx_rights_def (id, entity, libelle, module, module_position, family, type, bydefault, perms, subperms, enabled) VALUES
+(95, 1, 'Lire CA, bilans, resultats', 'compta', 60, 'financial', 'r', 0, 'resultat', 'lire', '1');
+
+-- CONCEDER PERMISSÃO CONTABILIDADE AO ADMIN
+INSERT IGNORE INTO llx_user_rights (fk_user, fk_id) VALUES (1, 95);
 -- ============================================
 INSERT IGNORE INTO llx_user_rights (fk_user, fk_id) 
 SELECT 1, r.id FROM llx_rights_def r WHERE r.entity = 1
