@@ -315,8 +315,8 @@ configure_dolibarr() {
 // Arquivo de configuração gerado automaticamente
 // NÃO EDITE ESTE ARQUIVO MANUALMENTE
 
-$dolibarr_main_url_root = 'http://${SERVER_IP}';
-$dolibarr_main_url = 'http://${SERVER_IP}';
+\$dolibarr_main_url_root = 'http://${SERVER_IP}';
+\$dolibarr_main_url = 'http://${SERVER_IP}';
 \$dolibarr_main_document_root = '${INSTALL_DIR}/htdocs';
 \$dolibarr_main_data_root = '${INSTALL_DIR}/htdocs/documents';
 \$dolibarr_main_db_host = '${DB_HOST}';
