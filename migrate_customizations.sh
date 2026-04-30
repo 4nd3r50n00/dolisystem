@@ -8,7 +8,7 @@
 set -e
 
 DOLIBARR_DIR="/var/www/dolibarr-23.0.2"
-CHANGES_DIR="${DOLIBARR_DIR}/!Changes"
+CHANGES_DIR="/root/!Changes"
 
 echo "============================================"
 echo "MIGRAÇÃO DE CUSTOMIZAÇÕES - DOLIBARR 23.0.2"
