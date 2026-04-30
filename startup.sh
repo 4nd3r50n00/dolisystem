@@ -337,7 +337,7 @@ EOF
 
     # Configurar permissões seguras
     chown -R www-data:www-data ${INSTALL_DIR}
-    chown root:root ${INSTALL_DIR}/htdocs/conf/conf.php
+    chown www-data:www-data ${INSTALL_DIR}/htdocs/conf/conf.php
     chmod 640 ${INSTALL_DIR}/htdocs/conf/conf.php
 
     chmod 755 ${INSTALL_DIR}/htdocs
