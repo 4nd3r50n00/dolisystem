@@ -114,6 +114,9 @@ mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entit
 echo "[20/17] Ativando modo escuro (sempre ativado)..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '2', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='2';"
 
+echo "[21/17] Configurando menu: ícones com texto abaixo..."
+mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_TOPMENU_DISABLE_IMAGE', '3', 1, 'chaine', 0, 'Menu icones+texto via migrate') ON DUPLICATE KEY UPDATE value='3';"
+
 echo ""
 echo "============================================"
 echo "MIGRAÇÃO CONCLUÍDA!"
