@@ -111,8 +111,8 @@ chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/documents
 echo "[19/17] Selecionando tema modern_dark..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('MAIN_THEME', 'modern_dark', 1, 'chaine', 0, 'Tema via migrate') ON DUPLICATE KEY UPDATE value='modern_dark';"
 
-echo "[20/17] Ativando modo escuro..."
-mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '1', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='1';"
+echo "[20/17] Ativando modo escuro (sempre ativado)..."
+mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '2', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='2';"
 
 echo ""
 echo "============================================"
