@@ -111,6 +111,9 @@ chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/documents
 echo "[19/17] Selecionando tema modern_dark..."
 mariadb -u root -N -e "INSERT IGNORE INTO dolibarr.const (name, value, entity, type, visible, note) VALUES ('MAIN_THEME', 'modern_dark', 1, 'chaine', 0, 'Tema selecionado via migrate') ON DUPLICATE KEY UPDATE value='modern_dark';"
 
+echo "[20/17] Ativando modo escuro..."
+mariadb -u root -N -e "INSERT IGNORE INTO dolibarr.const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '1', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='1';"
+
 echo ""
 echo "============================================"
 echo "MIGRAÇÃO CONCLUÍDA!"
