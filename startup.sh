@@ -251,7 +251,7 @@ configure_apache() {
 </VirtualHost>
 EOF
 
-    a2dissite 000-default.conf 2>/dev/null || true
+    /usr/sbin/a2dissite 000-default.conf 2>/dev/null || true
     /usr/sbin/a2ensite dolibarr.conf
 
     log_success "Apache configurado"
