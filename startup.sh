@@ -8,12 +8,7 @@
 
 set -e
 
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Variáveis de configuração
 DOLIBARR_VERSION="23.0.2"
@@ -181,14 +176,14 @@ FLUSH PRIVILEGES;
 EOF
 
     # Salvar credenciais
-    cat > /root/.dolibarr_db_credentials << EOF
+    cat > ${SCRIPT_DIR}/.dolibarr_db_credentials << EOF
 DB_HOST=localhost
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}
 DB_PASS=${DB_PASS}
 DB_TYPE=mysqli
 EOF
-    chmod 600 /root/.dolibarr_db_credentials
+    chmod 600 ${SCRIPT_DIR}/.dolibarr_db_credentials
 
     log_success "MariaDB configurado"
     log_warning "Senha do banco: $DB_PASS"
@@ -307,7 +302,7 @@ configure_dolibarr() {
     mkdir -p ${INSTALL_DIR}/htdocs/custom
 
     # Carregar credenciais do banco
-    source /root/.dolibarr_db_credentials
+    source ${SCRIPT_DIR}/.dolibarr_db_credentials
 
     # Criar arquivo de configuração
     cat > ${INSTALL_DIR}/htdocs/conf/conf.php << EOF
@@ -371,7 +366,7 @@ log() {
 log "Iniciando atualização Dolibarr..."
 
 # Backup do banco de dados
-mysqldump -u dolibarr_app -p$(cat /root/.dolibarr_db_credentials | grep DB_PASS | cut -d= -f2) dolibarr > /var/backups/dolibarr/db_$DATE.sql 2>/dev/null
+mysqldump -u dolibarr_app -p$(cat ${SCRIPT_DIR}/.dolibarr_db_credentials | grep DB_PASS | cut -d= -f2) dolibarr > /var/backups/dolibarr/db_$DATE.sql 2>/dev/null
 if [ $? -eq 0 ]; then
     log "Backup banco de dados: OK"
 else
@@ -466,11 +461,11 @@ create_admin() {
     # A primeira execução do instalador criará o admin
     # Aqui apenas registramos a senha gerada para referência
 
-    cat > /root/.dolibarr_admin << EOF
+    cat > ${SCRIPT_DIR}/.dolibarr_admin << EOF
 ADMIN_USER=admin
 ADMIN_PASS=$ADMIN_PASS
 EOF
-    chmod 600 /root/.dolibarr_admin
+    chmod 600 ${SCRIPT_DIR}/.dolibarr_admin
 
     log_success "Admin criado: admin / $ADMIN_PASS"
     log_warning "Guarde esta senha em local seguro!"
@@ -494,15 +489,15 @@ show_summary() {
     echo "  Host: localhost"
     echo "  Database: $DB_NAME"
     echo "  User: $DB_USER"
-    echo "  Senha: $(cat /root/.dolibarr_db_credentials | grep DB_PASS | cut -d= -f2)"
+    echo "  Senha: $(cat ${SCRIPT_DIR}/.dolibarr_db_credentials | grep DB_PASS | cut -d= -f2)"
     echo ""
     echo "CREDENCIAIS ADMIN (após instalação web):"
     echo "  Usuário: admin"
     echo "  Senha: (definida na instalação web)"
     echo ""
     echo "ARQUIVOS DE CONFIGURAÇÃO:"
-    echo "  - Database: /root/.dolibarr_db_credentials"
-    echo "  - Admin: /root/.dolibarr_admin"
+    echo "  - Database: ${SCRIPT_DIR}/.dolibarr_db_credentials"
+    echo "  - Admin: ${SCRIPT_DIR}/.dolibarr_admin"
     echo "  - VirtualHost: /etc/apache2/sites-available/dolibarr.conf"
     echo ""
     echo "PRÓXIMOS PASSOS:"
@@ -575,7 +570,7 @@ main() {
 
         backup)
             DATE=$(date +%Y%m%d_%H%M%S)
-            DB_PASS=$(cat /root/.dolibarr_db_credentials 2>/dev/null | grep DB_PASS | cut -d= -f2) || DB_PASS=""
+            DB_PASS=$(cat ${SCRIPT_DIR}/.dolibarr_db_credentials 2>/dev/null | grep DB_PASS | cut -d= -f2) || DB_PASS=""
 
             mkdir -p /var/backups/dolibarr/db
 
