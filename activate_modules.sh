@@ -327,6 +327,29 @@ INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('INVOI
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('INVOICE_SUPPLIER_ADDON_NUMBER', 'mod_facture_fournisseur_cactus', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SUPPLIER_ORDER_ADDON_PDF_ODT_PATH', 'DOL_DATA_ROOT/doctemplates/supplier_orders', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SUPPLIER_INVOICE_ADDON_PDF_ODT_PATH', 'DOL_DATA_ROOT/doctemplates/supplier_invoices', 1, 'chaine', 0);
+
+-- ============================================
+-- TABELAS DE CATEGORIAS FALTANTES
+-- ============================================
+CREATE TABLE IF NOT EXISTS llx_categorie_propal (
+    rowid int AUTO_INCREMENT PRIMARY KEY,
+    fk_categorie int NOT NULL,
+    fk_propal int NOT NULL,
+    entity int NOT NULL DEFAULT 1,
+    import_key varchar(14) DEFAULT NULL,
+    UNIQUE KEY uk_categorie_propal (fk_categorie, fk_propal, entity),
+    KEY idx_categorie_propal_fk_categorie (fk_categorie),
+    KEY idx_categorie_propal_fk_propal (fk_propal)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_intervention (
+    rowid int AUTO_INCREMENT PRIMARY KEY,
+    fk_categorie int NOT NULL,
+    fk_intervention int NOT NULL,
+    entity int NOT NULL DEFAULT 1,
+    import_key varchar(14) DEFAULT NULL,
+    UNIQUE KEY uk_categorie_intervention (fk_categorie, fk_intervention, entity)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOSQL
 
 echo ""
