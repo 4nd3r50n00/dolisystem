@@ -304,6 +304,7 @@ INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIE
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_CODECLIENT_ADDON', 'mod_codeclient_elephant', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_CODECOMPTA_ADDON', 'mod_codecompta_panicum', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_FISCAL_MONTH_START', '1', 1, 'chaine', 0);
+INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_MONNAIE', 'BRL', 1, 'chaine', 0);
 
 -- ============================================
 -- ESTOQUE
