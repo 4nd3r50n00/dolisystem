@@ -401,6 +401,11 @@ CREATE TABLE IF NOT EXISTS llx_ticket (
     KEY idx_ticket_status_code (status_code),
     KEY idx_ticket_date_creation (date_creation),
     KEY idx_ticket_fk_soc (fk_soc)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABELA DE INVENTORY
+-- ============================================
 CREATE TABLE IF NOT EXISTS llx_inventory (
   rowid int(11) NOT NULL AUTO_INCREMENT,
   entity int(11) DEFAULT 0,
