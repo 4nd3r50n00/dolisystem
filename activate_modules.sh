@@ -401,7 +401,28 @@ CREATE TABLE IF NOT EXISTS llx_ticket (
     KEY idx_ticket_status_code (status_code),
     KEY idx_ticket_date_creation (date_creation),
     KEY idx_ticket_fk_soc (fk_soc)
-) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS llx_inventory (
+  rowid int(11) NOT NULL AUTO_INCREMENT,
+  entity int(11) DEFAULT 0,
+  ref varchar(48) DEFAULT NULL,
+  date_creation datetime DEFAULT NULL,
+  tms timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  fk_user_creat int(11) DEFAULT NULL,
+  fk_user_modif int(11) DEFAULT NULL,
+  fk_user_valid int(11) DEFAULT NULL,
+  fk_warehouse int(11) DEFAULT NULL,
+  fk_product int(11) DEFAULT NULL,
+  categories_product varchar(255) DEFAULT NULL,
+  status int(11) DEFAULT 0,
+  title varchar(255) NOT NULL,
+  date_inventory datetime DEFAULT NULL,
+  date_validation datetime DEFAULT NULL,
+  import_key varchar(14) DEFAULT NULL,
+  PRIMARY KEY (rowid),
+  UNIQUE KEY uk_inventory_ref (ref,entity),
+  KEY idx_inventory_tms (tms),
+  KEY idx_inventory_date_creation (date_creation)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOSQL
 
 echo ""
