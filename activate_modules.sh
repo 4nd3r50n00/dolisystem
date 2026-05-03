@@ -298,12 +298,14 @@ INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('PRODU
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('PRODUCT_PRICE_UNIQ', '1', 1, 'chaine', 0);
 
 -- ============================================
--- EMPRESA/TERCEIROS
+-- EMPRESA/TERCEIROS (máscaras)
 -- ============================================
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_ADD_REF_IN_LIST', '0', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_CODECLIENT_ADDON', 'mod_codeclient_elephant', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_CODECOMPTA_ADDON', 'mod_codecompta_panicum', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('SOCIETE_FISCAL_MONTH_START', '1', 1, 'chaine', 0);
+INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('COMPANY_ELEPHANT_MASK_CUSTOMER', 'C-{yy}{mm}-{0000}', 1, 'chaine', 0);
+INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('COMPANY_ELEPHANT_MASK_SUPPLIER', 'F-{yy}{mm}-{0000}', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_MONNAIE', 'BRL', 1, 'chaine', 0);
 
 -- ============================================
