@@ -350,6 +350,45 @@ CREATE TABLE IF NOT EXISTS llx_categorie_intervention (
     import_key varchar(14) DEFAULT NULL,
     UNIQUE KEY uk_categorie_intervention (fk_categorie, fk_intervention, entity)
 ) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- TABELA DE TICKETS
+-- ============================================
+CREATE TABLE IF NOT EXISTS llx_ticket (
+    rowid int NOT NULL AUTO_INCREMENT,
+    ref VARCHAR(50) DEFAULT NULL,
+    track_id VARCHAR(50) DEFAULT NULL,
+    fk_soc int DEFAULT NULL,
+    fk_projet int DEFAULT NULL,
+    fk_product int DEFAULT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT,
+    type_code VARCHAR(2) DEFAULT NULL,
+    category_code VARCHAR(2) DEFAULT NULL,
+    severity_code VARCHAR(2) DEFAULT NULL,
+    status_code VARCHAR(3) DEFAULT NULL,
+    priority SMALLINT DEFAULT NULL,
+    progress SMALLINT DEFAULT '0',
+    resolution VARCHAR(50) DEFAULT NULL,
+    date_creation DATETIME NOT NULL,
+    tms TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    date_close DATETIME DEFAULT NULL,
+    fk_user_creat int NOT NULL,
+    fk_user_assign int DEFAULT NULL,
+    fk_user_close int DEFAULT NULL,
+    email_from VARCHAR(255) DEFAULT NULL,
+    email_to VARCHAR(255) DEFAULT NULL,
+    email_reply_to VARCHAR(255) DEFAULT NULL,
+    fk_statut SMALLINT NOT NULL DEFAULT '0',
+    entity INT NOT NULL DEFAULT '1',
+    import_key VARCHAR(14) DEFAULT NULL,
+    extramsg VARCHAR(255) DEFAULT NULL,
+    PRIMARY KEY (rowid),
+    UNIQUE KEY uk_track_id (track_id),
+    KEY idx_ticket_status_code (status_code),
+    KEY idx_ticket_date_creation (date_creation),
+    KEY idx_ticket_fk_soc (fk_soc)
+) ENGINE=innodb DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 EOSQL
 
 echo ""
