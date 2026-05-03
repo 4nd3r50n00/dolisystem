@@ -92,17 +92,17 @@ INSERT IGNORE INTO llx_rights_def (id, entity, libelle, module, module_position,
 (408, 1, 'Export invoices', 'facture', 10, 'accountancy', 'r', 0, 'export', NULL, '1');
 
 -- ============================================
--- PERMISSÕES - Pedidos (commande)
+-- PERMISSÕES - Pedidos (commande) - IDs 311-318
 -- ============================================
 INSERT IGNORE INTO llx_rights_def (id, entity, libelle, module, module_position, family, type, bydefault, perms, subperms, enabled) VALUES
-(351, 1, 'Read customer orders', 'commande', 10, 'commercial', 'r', 0, 'lire', NULL, '1'),
-(352, 1, 'Create and update customer orders', 'commande', 10, 'commercial', 'w', 0, 'creer', NULL, '1'),
-(353, 1, 'Validate customer orders', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'validate', '1'),
-(354, 1, 'Send orders by email', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'send', '1'),
-(355, 1, 'Close orders', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'close', '1'),
-(356, 1, 'Cancel orders', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'cancel', '1'),
-(357, 1, 'Delete orders', 'commande', 10, 'commercial', 'd', 0, 'supprimer', NULL, '1'),
-(358, 1, 'Export orders', 'commande', 10, 'commercial', 'r', 0, 'export', NULL, '1');
+(311, 1, 'Read customer orders', 'commande', 10, 'commercial', 'r', 0, 'lire', NULL, '1'),
+(312, 1, 'Create and update customer orders', 'commande', 10, 'commercial', 'w', 0, 'creer', NULL, '1'),
+(313, 1, 'Validate customer orders', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'validate', '1'),
+(314, 1, 'Send orders by email', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'send', '1'),
+(315, 1, 'Close orders', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'close', '1'),
+(316, 1, 'Cancel orders', 'commande', 10, 'commercial', 'd', 0, 'order_advance', 'cancel', '1'),
+(317, 1, 'Delete orders', 'commande', 10, 'commercial', 'd', 0, 'supprimer', NULL, '1'),
+(318, 1, 'Export orders', 'commande', 10, 'commercial', 'r', 0, 'export', NULL, '1');
 
 -- ============================================
 -- PERMISSÕES - Orçamentos (propale)
@@ -241,7 +241,7 @@ AND r.id IN (
     31,32,33,34,35,36,38,39,
     1001,1002,1003,1004,1005,
     401,402,403,404,405,406,407,408,
-    351,352,353,354,355,356,357,358,
+    311,312,313,314,315,316,317,318,
     21,22,24,25,26,27,28,29,
     701,702,703,704,705,706,707,708,709,710,711,712,713,
     501,502,503,504,505,506,507,
