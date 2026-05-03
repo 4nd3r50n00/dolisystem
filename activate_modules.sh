@@ -288,6 +288,16 @@ INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('EXPED
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('FICHEINTER_ADDON_PDF', 'soleil', 1, 'chaine', 0);
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('STOCK_ADDON_PDF', 'standard_stock', 1, 'chaine', 0);
 
+-- Ativar modelos PDF na tabela document_model
+INSERT IGNORE INTO llx_document_model (nom, entity, type, libelle) VALUES
+('master_bill', 1, 'invoice', 'MasterBill'),
+('master_order', 1, 'order', 'MasterOrder'),
+('master_propal', 1, 'propal', 'MasterPropal'),
+('soleil', 1, 'ficheinter', 'Soleil'),
+('espadon', 1, 'shipping', 'Espadon'),
+('cornas', 1, 'order_supplier', 'Cornas'),
+('standard_stock', 1, 'stock', 'Standard Stock');
+
 -- ============================================
 -- PRODUTOS E SERVIÇOS
 -- ============================================
