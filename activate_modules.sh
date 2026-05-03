@@ -43,17 +43,17 @@ INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_
 INSERT IGNORE INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_MODULE_FICHEINTER', '1', 1, 'chaine', 0);
 
 -- ============================================
--- PERMISSÕES - Terceiros (societe)
+-- PERMISSÕES - Terceiros (societe) - IDs 291-298
 -- ============================================
 INSERT IGNORE INTO llx_rights_def (id, entity, libelle, module, module_position, family, type, bydefault, perms, subperms, enabled) VALUES
-(121, 1, 'Read third parties', 'societe', 10, 'crm', 'r', 0, 'lire', NULL, '1'),
-(122, 1, 'Create and update third parties', 'societe', 10, 'crm', 'w', 0, 'creer', NULL, '1'),
-(125, 1, 'Delete third parties', 'societe', 10, 'crm', 'd', 0, 'supprimer', NULL, '1'),
-(126, 1, 'Export third parties', 'societe', 10, 'crm', 'r', 0, 'export', NULL, '1'),
-(281, 1, 'Read contacts', 'societe', 10, 'crm', 'r', 0, 'contact', NULL, '1'),
-(282, 1, 'Create and update contact', 'societe', 10, 'crm', 'w', 0, 'contact', NULL, '1'),
-(283, 1, 'Delete contacts', 'societe', 10, 'crm', 'd', 0, 'contact', NULL, '1'),
-(286, 1, 'Export contacts', 'societe', 10, 'crm', 'd', 0, 'contact', NULL, '1');
+(291, 1, 'Read third parties', 'societe', 10, 'crm', 'r', 0, 'lire', NULL, '1'),
+(292, 1, 'Create and update third parties', 'societe', 10, 'crm', 'w', 0, 'creer', NULL, '1'),
+(293, 1, 'Delete third parties', 'societe', 10, 'crm', 'd', 0, 'supprimer', NULL, '1'),
+(294, 1, 'Export third parties', 'societe', 10, 'crm', 'r', 0, 'export', NULL, '1'),
+(295, 1, 'Read contacts', 'societe', 10, 'crm', 'r', 0, 'contact', NULL, '1'),
+(296, 1, 'Create and update contact', 'societe', 10, 'crm', 'w', 0, 'contact', NULL, '1'),
+(297, 1, 'Delete contacts', 'societe', 10, 'crm', 'd', 0, 'contact', NULL, '1'),
+(298, 1, 'Export contacts', 'societe', 10, 'crm', 'd', 0, 'contact', NULL, '1');
 
 -- ============================================
 -- PERMISSÕES - Produtos (produit)
@@ -237,7 +237,7 @@ INSERT IGNORE INTO llx_user_rights (fk_user, fk_id) VALUES (1, 95);
 INSERT IGNORE INTO llx_user_rights (fk_user, fk_id) 
 SELECT 1, r.id FROM llx_rights_def r WHERE r.entity = 1
 AND r.id IN (
-    121,122,125,126,281,282,283,286,
+    121,122,125,126,295,296,297,298,
     31,32,33,34,35,36,38,39,
     1001,1002,1003,1004,1005,
     401,402,403,404,405,406,407,408,
