@@ -237,7 +237,8 @@ INSERT IGNORE INTO llx_user_rights (fk_user, fk_id) VALUES (1, 95);
 INSERT IGNORE INTO llx_user_rights (fk_user, fk_id) 
 SELECT 1, r.id FROM llx_rights_def r WHERE r.entity = 1
 AND r.id IN (
-    121,122,125,126,295,296,297,298,
+    121,122,125,126,281,282,283,286,
+    291,292,293,294,295,296,297,298,
     31,32,33,34,35,36,38,39,
     1001,1002,1003,1004,1005,
     401,402,403,404,405,406,407,408,
