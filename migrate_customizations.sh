@@ -27,18 +27,15 @@ cp -f ${CHANGES_DIR}/htdocs/core/lib/company.lib.php ${DOLIBARR_DIR}/htdocs/core
 
 echo "[4/17] Copiando core/modules/commande/doc/..."
 cp -f ${CHANGES_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/
-cp -f ${CHANGES_DIR}/htdocs/core/modules/commande/doc/pdf_moderno_order.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/
 
 echo "[5/17] Copiando core/modules/facture/doc/..."
 cp -f ${CHANGES_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/
 
 echo "[6/17] Copiando core/modules/fichinter/doc/..."
 cp -f ${CHANGES_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/
-cp -f ${CHANGES_DIR}/htdocs/core/modules/fichinter/doc/pdf_moderno_inter.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/
 
 echo "[7/17] Copiando core/modules/propale/doc/..."
 cp -f ${CHANGES_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/
-cp -f ${CHANGES_DIR}/htdocs/core/modules/propale/doc/pdf_moderno.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/
 
 echo "[8/17] Copiando expedition/card.php..."
 cp -f ${CHANGES_DIR}/htdocs/expedition/card.php ${DOLIBARR_DIR}/htdocs/expedition/
@@ -108,14 +105,40 @@ echo "[18/17] Corrigindo permissões..."
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/theme/modern_dark
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/documents
 
-echo "[19/17] Selecionando tema modern_dark..."
+echo "[21/17] Selecionando tema modern_dark..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('MAIN_THEME', 'modern_dark', 1, 'chaine', 0, 'Tema via migrate') ON DUPLICATE KEY UPDATE value='modern_dark';"
 
-echo "[20/17] Ativando modo escuro (sempre ativado)..."
+echo "[22/17] Ativando modo escuro (sempre ativado)..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '2', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='2';"
 
-echo "[21/17] Configurando menu: ícones com texto abaixo..."
+echo "[23/17] Configurando menu: ícones com texto abaixo..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_TOPMENU_DISABLE_IMAGE', '3', 1, 'chaine', 0, 'Menu icones+texto via migrate') ON DUPLICATE KEY UPDATE value='3';"
+
+echo "[24/17] Ativando modelos PDF master..."
+mariadb -u root -N dolibarr <<'EOSQL'
+-- Inserir modelos PDF master na tabela de registros
+INSERT IGNORE INTO llx_document_model (nom, entity, type, libelle) VALUES
+('master_order', 1, 'order', 'Master Order'),
+('master_bill', 1, 'invoice', 'Master Bill'),
+('master_propal', 1, 'propal', 'Master Propal'),
+('master_inter', 1, 'ficheinter', 'Master Inter');
+
+-- Desabilitar outros modelos da mesma categoria (manter apenas master)
+DELETE FROM llx_document_model WHERE type = 'order' AND nom != 'master_order';
+DELETE FROM llx_document_model WHERE type = 'propal' AND nom != 'master_propal';
+DELETE FROM llx_document_model WHERE type = 'invoice' AND nom != 'master_bill';
+DELETE FROM llx_document_model WHERE type = 'ficheinter' AND nom != 'master_inter';
+
+-- Ativar modelos PDF master (INSERT se não existir, UPDATE se existir)
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('COMMANDE_ADDON_PDF', 'master_order', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = 'master_order';
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('FACTURE_ADDON_PDF', 'master_bill', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = 'master_bill';
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('PROPALE_ADDON_PDF', 'master_propal', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = 'master_propal';
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('FICHEINTER_ADDON_PDF', 'master_inter', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = 'master_inter';
+EOSQL
 
 echo ""
 echo "============================================"
@@ -127,12 +150,9 @@ echo "  - compta/paiement.php"
 echo "  - core/ajax/onlineSign.php"
 echo "  - core/lib/company.lib.php"
 echo "  - core/modules/commande/doc/pdf_master_order.modules.php"
-echo "  - core/modules/commande/doc/pdf_moderno_order.modules.php"
 echo "  - core/modules/facture/doc/pdf_master_bill.modules.php"
 echo "  - core/modules/fichinter/doc/pdf_master_inter.modules.php"
-echo "  - core/modules/fichinter/doc/pdf_moderno_inter.modules.php"
 echo "  - core/modules/propale/doc/pdf_master_propal.modules.php"
-echo "  - core/modules/propale/doc/pdf_moderno.modules.php"
 echo "  - expedition/card.php"
 echo "  - langs/en_US/propal.lang"
 echo "  - langs/pt_BR/*.lang (70 arquivos)"

@@ -414,3 +414,94 @@ Liste todas as tabelas de categorização existentes:
 ```bash
 sudo mysql -u root dolibarr -e "SHOW TABLES LIKE 'llx_categorie_%';"
 ```
+
+---
+
+## 11. Migração de Customizações
+
+### 11.1 Executar Script de Migração
+
+Após a instalação do Dolibarr, execute o script de migração para aplicar as customizações:
+
+```bash
+cd /root/dolisystem
+sudo ./migrate_customizations.sh
+```
+
+O scriptirá:
+- Copiar arquivos customizados da pasta `!Changes`
+- Configurar Apache com CSP para Tailwind CSS
+- Ativar tema modern_dark
+- Configurar modelos PDF master
+- Aplicar configurações no banco de dados
+
+### 11.2 Arquivos Copiados
+
+| # | Arquivo | Descrição |
+|---|--------|-----------|
+| 1 | `compta/paiement.php` | Processamento de pagamentos |
+| 2 | `core/ajax/onlineSign.php` | Assinatura online |
+| 3 | `core/lib/company.lib.php` | Biblioteca de empresa |
+| 4 | `core/modules/commande/doc/pdf_master_order.modules.php` | Modelo PDF pedidos |
+| 5 | `core/modules/facture/doc/pdf_master_bill.modules.php` | Modelo PDF faturas |
+| 6 | `core/modules/fichinter/doc/pdf_master_inter.modules.php` | Modelo PDF intervenções |
+| 7 | `core/modules/propale/doc/pdf_master_propal.modules.php` | Modelo PDF propostas |
+| 8 | `expedition/card.php` | Card de expedição |
+| 9 | `langs/en_US/propal.lang` | Tradução propostas inglês |
+| 10 | `langs/pt_BR/*.lang` | Traduções português (70 arquivos) |
+| 11 | `public/onlinesign/newonlinesign.php` | Interface de assinatura online |
+| 12 | `theme/modern_dark/` | Tema dark moderno |
+| 13 | `theme/custom.css.php` | CSS customizado |
+| 14 | `core/tpl/login.tpl.php` | Template de login |
+| 15 | `debug_db_raw.php` | Ferramenta debug DB |
+| 16 | `debug_multicurrency.php` | Ferramenta debug moeda |
+
+### 11.3 Configurações Aplicadas
+
+#### Tema e Visual
+| Configuração | Valor | Descrição |
+|--------------|-------|----------|
+| `MAIN_THEME` | modern_dark | Tema padrão do sistema |
+| `THEME_DARKMODEENABLED` | 2 | Modo escuro sempre ativado |
+| `THEME_TOPMENU_DISABLE_IMAGE` | 3 | Menu com ícones + texto |
+
+#### Modelos PDF
+| Tipo | Modelo | Descrição |
+|------|--------|--------|
+| Pedidos | master_order | Master Order |
+| Faturas | master_bill | Master Bill |
+| Propostas | master_propal | Master Propal |
+| Intervenções | master_inter | Master Inter |
+
+O script Remove outros modelos PDF da mesma categoria, mantendo apenas o master.
+
+#### Apache
+- CSP atualizada para permitir Tailwind CSS CDN
+- Headers de segurança mantidos
+
+### 11.4 Estrutura da Pasta !Changes
+
+```
+!Changes/
+└── htdocs/
+    ├── compta/paiement.php
+    ├── core/
+    │   ├── ajax/onlineSign.php
+    │   ├── lib/company.lib.php
+    │   ├── modules/
+    │   │   ├── commande/doc/pdf_master_order.modules.php
+    │   │   ├── facture/doc/pdf_master_bill.modules.php
+    │   │   ├── fichinter/doc/pdf_master_inter.modules.php
+    │   │   └── propale/doc/pdf_master_propal.modules.php
+    │   └── tpl/login.tpl.php
+    ├── expedition/card.php
+    ├── langs/
+    │   ├── en_US/propal.lang
+    │   └── pt_BR/*.lang (70 arquivos)
+    ├── public/onlinesign/newonlinesign.php
+    ├── theme/
+    │   ├── modern_dark/
+    │   └── custom.css.php
+    ├── debug_db_raw.php
+    └── debug_multicurrency.php
+```
