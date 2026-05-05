@@ -258,6 +258,21 @@ INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('SUPPLIER_INV
 ON DUPLICATE KEY UPDATE value = 'DOL_DATA_ROOT/doctemplates/supplier_invoices';
 EOSQL
 
+echo "Configurações de banco de dados aplicadas."
+mariadb -u root dolibarr <<'EOSQL'
+
+-- Verificar e criar llx_categorie_propal se não existir
+CREATE TABLE IF NOT EXISTS llx_categorie_propal (
+  fk_categorie INTEGER NOT NULL,
+  fk_propal INTEGER NOT NULL,
+  import_key VARCHAR(14) DEFAULT NULL,
+  PRIMARY KEY (fk_categorie, fk_propal),
+  KEY idx_llx_categorie_propal_fk_propal (fk_propal),
+  KEY idx_llx_categorie_propal_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+EOSQL
+
 echo ""
 echo "============================================"
 echo "MIGRAÇÃO CONCLUÍDA!"
