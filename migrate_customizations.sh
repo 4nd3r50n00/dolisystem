@@ -101,20 +101,36 @@ cat > /etc/apache2/sites-available/dolibarr.conf << 'CSPEOF'
 CSPEOF
 a2ensite dolibarr.conf 2>/dev/null || true
 
-echo "[18/17] Corrigindo permissões..."
+echo "[18/17] Configurando valores padrão de endereço na criação de clientes..."
+if ! grep -q "mysoc->zip" ${DOLIBARR_DIR}/htdocs/societe/card.php; then
+	sed -i '/\$object->zip = GETPOST.*zipcode/a\
+		if ($action == '\''create'\'' \&\& empty($object->zip)) {\
+			$object->zip = $mysoc->zip;\
+		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
+	sed -i '/\$object->town = GETPOST.*town/a\
+		if ($action == '\''create'\'' \&\& empty($object->town)) {\
+			$object->town = $mysoc->town;\
+		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
+	sed -i '/\$object->state_id = GETPOSTINT.*state_id/a\
+		if ($action == '\''create'\'' \&\& empty($object->state_id)) {\
+			$object->state_id = $mysoc->state_id;\
+		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
+fi
+
+echo "[19/17] Corrigindo permissões..."
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/theme/modern_dark
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/documents
 
-echo "[21/17] Selecionando tema modern_dark..."
+echo "[20/17] Selecionando tema modern_dark..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('MAIN_THEME', 'modern_dark', 1, 'chaine', 0, 'Tema via migrate') ON DUPLICATE KEY UPDATE value='modern_dark';"
 
-echo "[22/17] Ativando modo escuro (sempre ativado)..."
+echo "[21/17] Ativando modo escuro (sempre ativado)..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '2', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='2';"
 
-echo "[23/17] Configurando menu: ícones com texto abaixo..."
+echo "[22/17] Configurando menu: ícones com texto abaixo..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_TOPMENU_DISABLE_IMAGE', '3', 1, 'chaine', 0, 'Menu icones+texto via migrate') ON DUPLICATE KEY UPDATE value='3';"
 
-echo "[24/17] Ativando modelos PDF master..."
+echo "[23/17] Ativando modelos PDF master..."
 mariadb -u root -N dolibarr <<'EOSQL'
 -- Inserir modelos PDF master na tabela de registros
 INSERT IGNORE INTO llx_document_model (nom, entity, type, libelle) VALUES
@@ -206,6 +222,21 @@ INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('PRODUCT_PRIC
 ON DUPLICATE KEY UPDATE value = 'HT';
 INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('PRODUCT_PRICE_UNIQ', '1', 1, 'chaine', 0)
 ON DUPLICATE KEY UPDATE value = '1';
+
+-- ============================================
+-- PAÍS E MOEDA PADRÃO (BRASIL)
+-- ============================================
+-- Corrigir label do país para Português
+UPDATE llx_c_country SET label = 'Brasil' WHERE code = 'BR';
+
+-- Corrigir label da moeda para Português
+UPDATE llx_c_currencies SET label = 'Real Brasileiro' WHERE code_iso = 'BRL';
+
+-- Configurar país e moeda padrão
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_INFO_SOCIETE_COUNTRY', '56:BR:Brasil', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = '56:BR:Brasil';
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_MONNAIE', 'BRL', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = 'BRL';
 
 -- ============================================
 -- EMPRESA/TERCEIROS
