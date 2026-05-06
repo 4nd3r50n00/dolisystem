@@ -310,6 +310,13 @@ EOSQL
 echo "[24/17] Inserindo método de pagamento PIX..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_c_paiement (id, entity, code, libelle, type, active, accountancy_code, module, position) VALUES (5, 1, 'PIX', 'PIX', 2, 1, NULL, NULL, 0);"
 
+echo "[25/17] Adicionando colunas PIX na tabela de contas bancárias..."
+mariadb -u root -N dolibarr -e "
+ALTER TABLE llx_bank_account 
+ADD COLUMN IF NOT EXISTS tipo_chave_pix ENUM('CPF','CNPJ','EMAIL','TELEFONE','ALEATORIA') NULL,
+ADD COLUMN IF NOT EXISTS chave_pix VARCHAR(100) NULL;
+"
+
 echo ""
 echo "============================================"
 echo "MIGRAÇÃO CONCLUÍDA!"
