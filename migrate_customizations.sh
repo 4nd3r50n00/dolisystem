@@ -307,6 +307,9 @@ CREATE TABLE IF NOT EXISTS llx_categorie_propal (
 
 EOSQL
 
+echo "[24/17] Inserindo método de pagamento PIX..."
+mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_c_paiement (id, entity, code, libelle, type, active, accountancy_code, module, position) VALUES (5, 1, 'PIX', 'PIX', 2, 1, NULL, NULL, 0);"
+
 echo ""
 echo "============================================"
 echo "MIGRAÇÃO CONCLUÍDA!"
