@@ -58,6 +58,9 @@ cp -f ${CHANGES_DIR}/htdocs/theme/custom.css.php ${DOLIBARR_DIR}/htdocs/theme/
 echo "[14/17] Copiando core/tpl/login.tpl.php..."
 cp -f ${CHANGES_DIR}/htdocs/core/tpl/login.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
 
+echo "[14b/17] Copiando core/tpl/passwordforgotten.tpl.php..."
+cp -f ${CHANGES_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
+
 echo "[15/17] Copiando debug_db_raw.php..."
 cp -f ${CHANGES_DIR}/htdocs/debug_db_raw.php ${DOLIBARR_DIR}/htdocs/
 
