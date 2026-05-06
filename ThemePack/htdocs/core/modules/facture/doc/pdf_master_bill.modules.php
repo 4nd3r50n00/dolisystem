@@ -1509,11 +1509,16 @@ class pdf_master_bill extends ModelePDFFactures
 				|| ($object->mode_reglement_code == 'VIR' && !getDolGlobalInt('FACTURE_RIB_NUMBER') && empty($object->fk_account) && empty($object->fk_bank))) {
 				// Avoid having any valid PDF with setup that is not complete
 				$outputlangs->load("errors");
+				$outputlangs->load("bills");
 
 				$pdf->SetXY($this->marge_gauche, $posy);
 				$pdf->SetTextColor(200, 0, 0);
 				$pdf->SetFont('', '', $default_font_size - 2);
-				$this->error = $outputlangs->transnoentities("ErrorPaymentModeDefinedToWithoutSetup", $object->mode_reglement_code);
+				$paymentModeLabel = $outputlangs->transnoentities("PaymentType".$object->mode_reglement_code);
+				if ($paymentModeLabel == "PaymentType".$object->mode_reglement_code) {
+					$paymentModeLabel = $object->mode_reglement;
+				}
+				$this->error = $outputlangs->transnoentities("ErrorPaymentModeDefinedToWithoutSetup", $paymentModeLabel);
 				$pdf->MultiCell($posxend - $this->marge_gauche, 3, $this->error, 0, 'L', false);
 				$pdf->SetTextColor(0, 0, 0);
 
