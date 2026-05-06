@@ -2,14 +2,14 @@
 
 # =============================================================================
 # Script de Migração - Aplicar Customizações do Dolibarr
-# Arquivos copiados de !Changes para a instalação
+# Arquivos copiados de ThemePack para a instalação
 # =============================================================================
 
 set -e
 
 DOLIBARR_DIR="/var/www/dolibarr-23.0.2"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CHANGES_DIR="${SCRIPT_DIR}/!Changes"
+THEMEPACK_DIR="${SCRIPT_DIR}/ThemePack"
 
 echo "============================================"
 echo "MIGRAÇÃO DE CUSTOMIZAÇÕES - DOLIBARR 23.0.2"
@@ -17,55 +17,55 @@ echo "============================================"
 
 # Copiar arquivos modificados
 echo "[1/17] Copiando compta/paiement.php..."
-cp -f ${CHANGES_DIR}/htdocs/compta/paiement.php ${DOLIBARR_DIR}/htdocs/compta/
+cp -f ${THEMEPACK_DIR}/htdocs/compta/paiement.php ${DOLIBARR_DIR}/htdocs/compta/
 
 echo "[2/17] Copiando core/ajax/onlineSign.php..."
-cp -f ${CHANGES_DIR}/htdocs/core/ajax/onlineSign.php ${DOLIBARR_DIR}/htdocs/core/ajax/
+cp -f ${THEMEPACK_DIR}/htdocs/core/ajax/onlineSign.php ${DOLIBARR_DIR}/htdocs/core/ajax/
 
 echo "[3/17] Copiando core/lib/company.lib.php..."
-cp -f ${CHANGES_DIR}/htdocs/core/lib/company.lib.php ${DOLIBARR_DIR}/htdocs/core/lib/
+cp -f ${THEMEPACK_DIR}/htdocs/core/lib/company.lib.php ${DOLIBARR_DIR}/htdocs/core/lib/
 
 echo "[4/17] Copiando core/modules/commande/doc/..."
-cp -f ${CHANGES_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/
+cp -f ${THEMEPACK_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/
 
 echo "[5/17] Copiando core/modules/facture/doc/..."
-cp -f ${CHANGES_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/
+cp -f ${THEMEPACK_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/
 
 echo "[6/17] Copiando core/modules/fichinter/doc/..."
-cp -f ${CHANGES_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/
+cp -f ${THEMEPACK_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/
 
 echo "[7/17] Copiando core/modules/propale/doc/..."
-cp -f ${CHANGES_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/
+cp -f ${THEMEPACK_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/
 
 echo "[8/17] Copiando expedition/card.php..."
-cp -f ${CHANGES_DIR}/htdocs/expedition/card.php ${DOLIBARR_DIR}/htdocs/expedition/
+cp -f ${THEMEPACK_DIR}/htdocs/expedition/card.php ${DOLIBARR_DIR}/htdocs/expedition/
 
 echo "[9/17] Copiando langs/en_US/propal.lang..."
-cp -f ${CHANGES_DIR}/htdocs/langs/en_US/propal.lang ${DOLIBARR_DIR}/htdocs/langs/en_US/
+cp -f ${THEMEPACK_DIR}/htdocs/langs/en_US/propal.lang ${DOLIBARR_DIR}/htdocs/langs/en_US/
 
 echo "[10/17] Copiando langs/pt_BR/..."
-cp -f ${CHANGES_DIR}/htdocs/langs/pt_BR/*.lang ${DOLIBARR_DIR}/htdocs/langs/pt_BR/
+cp -f ${THEMEPACK_DIR}/htdocs/langs/pt_BR/*.lang ${DOLIBARR_DIR}/htdocs/langs/pt_BR/
 
 echo "[11/17] Copiando public/onlinesign/newonlinesign.php..."
-cp -f ${CHANGES_DIR}/htdocs/public/onlinesign/newonlinesign.php ${DOLIBARR_DIR}/htdocs/public/onlinesign/
+cp -f ${THEMEPACK_DIR}/htdocs/public/onlinesign/newonlinesign.php ${DOLIBARR_DIR}/htdocs/public/onlinesign/
 
 echo "[12/17] Copiando theme/modern_dark..."
-cp -rf ${CHANGES_DIR}/htdocs/theme/modern_dark ${DOLIBARR_DIR}/htdocs/theme/
+cp -rf ${THEMEPACK_DIR}/htdocs/theme/modern_dark ${DOLIBARR_DIR}/htdocs/theme/
 
 echo "[13/17] Copiando theme/custom.css.php..."
-cp -f ${CHANGES_DIR}/htdocs/theme/custom.css.php ${DOLIBARR_DIR}/htdocs/theme/
+cp -f ${THEMEPACK_DIR}/htdocs/theme/custom.css.php ${DOLIBARR_DIR}/htdocs/theme/
 
 echo "[14/17] Copiando core/tpl/login.tpl.php..."
-cp -f ${CHANGES_DIR}/htdocs/core/tpl/login.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
+cp -f ${THEMEPACK_DIR}/htdocs/core/tpl/login.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
 
 echo "[14b/17] Copiando core/tpl/passwordforgotten.tpl.php..."
-cp -f ${CHANGES_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
+cp -f ${THEMEPACK_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
 
 echo "[15/17] Copiando debug_db_raw.php..."
-cp -f ${CHANGES_DIR}/htdocs/debug_db_raw.php ${DOLIBARR_DIR}/htdocs/
+cp -f ${THEMEPACK_DIR}/htdocs/debug_db_raw.php ${DOLIBARR_DIR}/htdocs/
 
 echo "[16/17] Copiando debug_multicurrency.php..."
-cp -f ${CHANGES_DIR}/htdocs/debug_multicurrency.php ${DOLIBARR_DIR}/htdocs/
+cp -f ${THEMEPACK_DIR}/htdocs/debug_multicurrency.php ${DOLIBARR_DIR}/htdocs/
 
 echo "[17/17] Configurando CSP do Apache para Tailwind CSS..."
 a2dissite dolibarr.conf 2>/dev/null || true

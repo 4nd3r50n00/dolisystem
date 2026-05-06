@@ -428,8 +428,8 @@ cd /root/dolisystem
 sudo ./migrate_customizations.sh
 ```
 
-O scriptirá:
-- Copiar arquivos customizados da pasta `!Changes`
+O script irá:
+- Copiar arquivos customizados da pasta `ThemePack`
 - Configurar Apache com CSP para Tailwind CSS
 - Ativar tema modern_dark
 - Configurar modelos PDF master
@@ -453,8 +453,9 @@ O scriptirá:
 | 12 | `theme/modern_dark/` | Tema dark moderno |
 | 13 | `theme/custom.css.php` | CSS customizado |
 | 14 | `core/tpl/login.tpl.php` | Template de login |
-| 15 | `debug_db_raw.php` | Ferramenta debug DB |
-| 16 | `debug_multicurrency.php` | Ferramenta debug moeda |
+| 15 | `core/tpl/passwordforgotten.tpl.php` | Template recuperação senha |
+| 16 | `debug_db_raw.php` | Ferramenta debug DB |
+| 17 | `debug_multicurrency.php` | Ferramenta debug moeda |
 
 ### 11.3 Configurações Aplicadas
 
@@ -479,10 +480,10 @@ O script Remove outros modelos PDF da mesma categoria, mantendo apenas o master.
 - CSP atualizada para permitir Tailwind CSS CDN
 - Headers de segurança mantidos
 
-### 11.4 Estrutura da Pasta !Changes
+### 11.4 Estrutura da Pasta ThemePack
 
 ```
-!Changes/
+ThemePack/
 └── htdocs/
     ├── compta/paiement.php
     ├── core/
@@ -493,7 +494,9 @@ O script Remove outros modelos PDF da mesma categoria, mantendo apenas o master.
     │   │   ├── facture/doc/pdf_master_bill.modules.php
     │   │   ├── fichinter/doc/pdf_master_inter.modules.php
     │   │   └── propale/doc/pdf_master_propal.modules.php
-    │   └── tpl/login.tpl.php
+    │   └── tpl/
+    │       ├── login.tpl.php
+    │       └── passwordforgotten.tpl.php
     ├── expedition/card.php
     ├── langs/
     │   ├── en_US/propal.lang
