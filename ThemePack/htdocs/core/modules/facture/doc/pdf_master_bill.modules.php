@@ -1632,7 +1632,7 @@ class pdf_master_bill extends ModelePDFFactures
 			}
 
 			// If payment mode not forced or forced to VIR, show payment with BAN
-			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR') {
+			if (empty($object->mode_reglement_code) || $object->mode_reglement_code == 'VIR' || $object->mode_reglement_code == 'PIX') {
 				if ($object->fk_account > 0 || $object->fk_bank > 0 || getDolGlobalInt('FACTURE_RIB_NUMBER')) {
 					$bankid = ($object->fk_account <= 0 ? getDolGlobalInt('FACTURE_RIB_NUMBER') : (int) $object->fk_account);
 					if ($object->fk_bank > 0) {
