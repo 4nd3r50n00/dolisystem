@@ -19,4 +19,4 @@
 
 # Backup
 *.bak
-*~
+*~.dolibarr_admin
