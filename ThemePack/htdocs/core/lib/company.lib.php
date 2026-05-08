@@ -2910,9 +2910,7 @@ function htmlPrintOnlineHeader($mysoc, $langs, $showlogo = 1, $alttext = '', $su
 			print '<div class="clearboth"></div><strong>' . $alttext . '</strong>';
 		}
 		print '</div>';
-		if (!getDolGlobalString('MAIN_HIDE_POWERED_BY')) {
-			print '<div class="poweredbypublicpayment opacitymedium right hideonsmartphone"><a class="poweredbyhref" href="https://www.dolibarr.org?utm_medium=website&utm_source=poweredby" target="dolibarr" rel="noopener">' . $langs->trans("PoweredBy") . '<br><img class="poweredbyimg" src="' . DOL_URL_ROOT . '/theme/dolibarr_logo.svg" width="80px"></a></div>';
-		}
+// Powered by removido por seguranca (anti-fingerprinting)
 		print '</div>';
 	}
 

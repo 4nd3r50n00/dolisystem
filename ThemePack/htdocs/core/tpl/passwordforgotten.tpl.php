@@ -22,7 +22,33 @@ if ($action == 'buildnewpassword' && $username) {
 
 $titleofpage = $langs->trans('SendNewPassword');
 $application = constant('DOL_APPLICATION_TITLE');
-$titleofloginpage = $application.' @ '.DOL_VERSION;
+$applicationcustom = getDolGlobalString('MAIN_APPLICATION_TITLE');
+if ($applicationcustom) {
+    $application = (preg_match('/^\+/', $applicationcustom) ? $application : '').$applicationcustom;
+}
+$titleofloginpage = $langs->trans('SendNewPassword');
+
+// Logo - mesmo padrao do login.tpl.php
+if (empty($urllogo)) {
+    $urllogo = DOL_URL_ROOT.'/theme/modern_dark/img/logo_white.png';
+    $logosmall = getDolGlobalString('MAIN_INFO_SOCIETE_LOGO_SMALL');
+    if ($logosmall) {
+        $urllogo = DOL_URL_ROOT.'/viewimage.php?modulepart=mycompany&entity='.$conf->entity.'&file='.urlencode('logos/thumbs/'.$logosmall);
+    } else {
+        $logo = getDolGlobalString('MAIN_INFO_SOCIETE_LOGO');
+        if ($logo) {
+            $urllogo = DOL_URL_ROOT.'/viewimage.php?modulepart=mycompany&entity='.$conf->entity.'&file='.urlencode('logos/'.$logo);
+        }
+    }
+}
+
+// Nome da empresa para footer
+$companyname = '';
+if (is_object($mysoc) && !empty($mysoc->name)) {
+    $companyname = $mysoc->name;
+} elseif ($applicationcustom) {
+    $companyname = $application;
+}
 
 ?>
 <!DOCTYPE html>
@@ -121,14 +147,12 @@ $titleofloginpage = $application.' @ '.DOL_VERSION;
     <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
 
     <div class="w-full max-w-md">
-        <!-- Logo/Title -->
-        <div class="text-center mb-8 text-3d-container">
-            <h1 class="text-4xl font-bold text-white text-3d">
-                <i class="fas fa-shield-halved mr-3 text-emerald-500"></i>
-                <?php echo $application; ?>
-            </h1>
-            <p class="text-gray-400 mt-2 text-sm"><?php echo DOL_VERSION; ?></p>
-        </div>
+<!-- Logo/Title -->
+<div class="text-center mb-8 text-3d-container">
+<div class="animate-fade-in-up">
+<img src="<?php echo $urllogo; ?>" alt="" class="mx-auto mb-4" style="max-height: 80px;" />
+</div>
+</div>
 
         <!-- Glass Panel -->
         <div class="glass-panel shine-effect">
@@ -207,7 +231,7 @@ $titleofloginpage = $application.' @ '.DOL_VERSION;
         <!-- Footer -->
         <div class="text-center mt-8">
             <p class="text-gray-500 text-xs">
-                &copy; <?php echo date('Y'); ?> Dolibarr ERP & CRM
+                &copy; <?php echo date('Y'); ?> <?php echo dol_escape_htmltag($companyname); ?>
             </p>
         </div>
     </div>
