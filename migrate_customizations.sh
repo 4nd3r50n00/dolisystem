@@ -16,58 +16,58 @@ echo "MIGRAÇÃO DE CUSTOMIZAÇÕES - DOLIBARR 23.0.2"
 echo "============================================"
 
 # Copiar arquivos modificados
-echo "[1/17] Copiando compta/paiement.php..."
+echo "[1/27] Copiando compta/paiement.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/compta/paiement.php ${DOLIBARR_DIR}/htdocs/compta/
 
-echo "[2/17] Copiando core/ajax/onlineSign.php..."
+echo "[2/27] Copiando core/ajax/onlineSign.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/ajax/onlineSign.php ${DOLIBARR_DIR}/htdocs/core/ajax/
 
-echo "[3/17] Copiando core/lib/company.lib.php..."
+echo "[3/27] Copiando core/lib/company.lib.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/lib/company.lib.php ${DOLIBARR_DIR}/htdocs/core/lib/
 
-echo "[4/17] Copiando core/modules/commande/doc/..."
+echo "[4/27] Copiando core/modules/commande/doc/..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/
 
-echo "[5/17] Copiando core/modules/facture/doc/..."
+echo "[5/27] Copiando core/modules/facture/doc/..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/
 
-echo "[6/17] Copiando core/modules/fichinter/doc/..."
+echo "[6/27] Copiando core/modules/fichinter/doc/..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/
 
-echo "[7/17] Copiando core/modules/propale/doc/..."
+echo "[7/27] Copiando core/modules/propale/doc/..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/
 
-echo "[8/17] Copiando expedition/card.php..."
+echo "[8/27] Copiando expedition/card.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/expedition/card.php ${DOLIBARR_DIR}/htdocs/expedition/
 
-echo "[9/17] Copiando langs/en_US/propal.lang..."
+echo "[9/27] Copiando langs/en_US/propal.lang..."
 cp -f ${THEMEPACK_DIR}/htdocs/langs/en_US/propal.lang ${DOLIBARR_DIR}/htdocs/langs/en_US/
 
-echo "[10/17] Copiando langs/pt_BR/..."
+echo "[10/27] Copiando langs/pt_BR/..."
 cp -f ${THEMEPACK_DIR}/htdocs/langs/pt_BR/*.lang ${DOLIBARR_DIR}/htdocs/langs/pt_BR/
 
-echo "[11/17] Copiando public/onlinesign/newonlinesign.php..."
+echo "[11/27] Copiando public/onlinesign/newonlinesign.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/public/onlinesign/newonlinesign.php ${DOLIBARR_DIR}/htdocs/public/onlinesign/
 
-echo "[12/17] Copiando theme/modern_dark..."
+echo "[12/27] Copiando theme/modern_dark..."
 cp -rf ${THEMEPACK_DIR}/htdocs/theme/modern_dark ${DOLIBARR_DIR}/htdocs/theme/
 
-echo "[13/17] Copiando theme/custom.css.php..."
+echo "[13/27] Copiando theme/custom.css.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/theme/custom.css.php ${DOLIBARR_DIR}/htdocs/theme/
 
-echo "[14/17] Copiando core/tpl/login.tpl.php..."
+echo "[14/27] Copiando core/tpl/login.tpl.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/tpl/login.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
 
-echo "[14b/17] Copiando core/tpl/passwordforgotten.tpl.php..."
+echo "[15/27] Copiando core/tpl/passwordforgotten.tpl.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
 
-echo "[15/17] Copiando debug_db_raw.php..."
+echo "[16/27] Copiando debug_db_raw.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/debug_db_raw.php ${DOLIBARR_DIR}/htdocs/
 
-echo "[16/17] Copiando debug_multicurrency.php..."
+echo "[17/27] Copiando debug_multicurrency.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/debug_multicurrency.php ${DOLIBARR_DIR}/htdocs/
 
-echo "[17/17] Configurando CSP do Apache para Tailwind CSS..."
+echo "[18/27] Configurando CSP do Apache para Tailwind CSS..."
 a2dissite dolibarr.conf 2>/dev/null || true
 cat > /etc/apache2/sites-available/dolibarr.conf << 'CSPEOF'
 <VirtualHost *:80>
@@ -104,7 +104,7 @@ cat > /etc/apache2/sites-available/dolibarr.conf << 'CSPEOF'
 CSPEOF
 a2ensite dolibarr.conf 2>/dev/null || true
 
-echo "[18/17] Configurando valores padrão de endereço na criação de clientes..."
+echo "[19/27] Configurando valores padrão de endereço na criação de clientes..."
 if ! grep -q "mysoc->zip" ${DOLIBARR_DIR}/htdocs/societe/card.php; then
 	sed -i '/\$object->zip = GETPOST.*zipcode/a\
 		if ($action == '\''create'\'' \&\& empty($object->zip)) {\
@@ -120,20 +120,20 @@ if ! grep -q "mysoc->zip" ${DOLIBARR_DIR}/htdocs/societe/card.php; then
 		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
 fi
 
-echo "[19/17] Corrigindo permissões..."
+echo "[20/27] Corrigindo permissões..."
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/theme/modern_dark
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/documents
 
-echo "[20/17] Selecionando tema modern_dark..."
+echo "[21/27] Selecionando tema modern_dark..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('MAIN_THEME', 'modern_dark', 1, 'chaine', 0, 'Tema via migrate') ON DUPLICATE KEY UPDATE value='modern_dark';"
 
-echo "[21/17] Ativando modo escuro (sempre ativado)..."
+echo "[22/27] Ativando modo escuro (sempre ativado)..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_DARKMODEENABLED', '2', 1, 'chaine', 0, 'Modo escuro via migrate') ON DUPLICATE KEY UPDATE value='2';"
 
-echo "[22/17] Configurando menu: ícones com texto abaixo..."
+echo "[23/27] Configurando menu: ícones com texto abaixo..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_TOPMENU_DISABLE_IMAGE', '3', 1, 'chaine', 0, 'Menu icones+texto via migrate') ON DUPLICATE KEY UPDATE value='3';"
 
-echo "[23/17] Ativando modelos PDF master..."
+echo "[24/27] Ativando modelos PDF master..."
 mariadb -u root -N dolibarr <<'EOSQL'
 -- Inserir modelos PDF master na tabela de registros
 INSERT IGNORE INTO llx_document_model (nom, entity, type, libelle) VALUES
@@ -307,36 +307,99 @@ CREATE TABLE IF NOT EXISTS llx_categorie_propal (
 
 EOSQL
 
-echo "[24/17] Inserindo método de pagamento PIX..."
+echo "[25/27] Inserindo método de pagamento PIX..."
 mariadb -u root -N dolibarr -e "INSERT IGNORE INTO llx_c_paiement (id, entity, code, libelle, type, active, accountancy_code, module, position) VALUES (5, 1, 'PIX', 'PIX', 2, 1, NULL, NULL, 0);"
 
-echo "[25/17] Adicionando colunas PIX na tabela de contas bancárias..."
+echo "[26/27] Adicionando colunas PIX na tabela de contas bancárias..."
 mariadb -u root -N dolibarr -e "
 ALTER TABLE llx_bank_account 
 ADD COLUMN IF NOT EXISTS tipo_chave_pix ENUM('CPF','CNPJ','EMAIL','TELEFONE','ALEATORIA') NULL,
 ADD COLUMN IF NOT EXISTS chave_pix VARCHAR(100) NULL;
 "
 
+echo "[27/27] Anti-fingerprinting: removendo assinaturas Dolibarr de páginas públicas..."
+
+# --- main.inc.php ---
+
+# Meta author: trocar "Dolibarr Development Team" pelo titulo da aplicacao
+sed -i 's/<meta name="author" content="Dolibarr Development Team">/<meta name="author" content="<?php echo getDolGlobalString('\''MAIN_APPLICATION_TITLE'\'', '\'''\''); ?>">/' \
+    ${DOLIBARR_DIR}/htdocs/main.inc.php
+
+# Comentario CSS
+sed -i "s/Includes CSS for Dolibarr theme/Includes CSS/" \
+    ${DOLIBARR_DIR}/htdocs/main.inc.php
+
+# Comentario JS (com layout)
+sed -i "s/Includes JS of Dolibarr (browser layout/Includes JS (browser layout/" \
+    ${DOLIBARR_DIR}/htdocs/main.inc.php
+
+# Comentario JS (sem layout)
+sed -i "s/Includes JS of Dolibarr/Includes JS/" \
+    ${DOLIBARR_DIR}/htdocs/main.inc.php
+
+# Comentario JS Footer
+sed -i "s/Includes JS Footer of Dolibarr/Includes JS Footer/" \
+    ${DOLIBARR_DIR}/htdocs/main.inc.php
+
+# --- login.tpl.php ---
+
+# Remover versao do title (linha com @ $titletruedolibarrversion)
+sed -i "s/\\$titleofloginpage \.=' @ '\\.'\\$titletruedolibarrversion;/\\/\\/ Versao removida do title por seguranca (anti-fingerprinting)/" \
+    ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+
+# Remover comentarios HTML que expoe auth mode, cookie name e urlfrom
+sed -i '/<!-- authentication mode = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+sed -i '/<!-- cookie name used for this session = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+sed -i '/<!-- urlfrom in this session = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+
+# --- company.lib.php ---
+
+# Remover bloco "Powered by Dolibarr" (link dolibarr.org + logo)
+sed -i '/if (!getDolGlobalString.*MAIN_HIDE_POWERED_BY.*)/,/^[[:space:]]*}$/c\	\/\/ Powered by removido por seguranca (anti-fingerprinting)' \
+    ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php 2>/dev/null || true
+
+# --- PDFs master ---
+
+# Trocar SetCreator de "Dolibarr DOL_VERSION" para "$mysoc->name"
+for pdffile in \
+    ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php \
+    ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php \
+    ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php \
+    ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php; do
+    if [ -f "$pdffile" ]; then
+        sed -i 's/\$pdf->SetCreator("Dolibarr "\.DOL_VERSION)/$pdf->SetCreator($mysoc->name)/' "$pdffile"
+    fi
+done
+
+echo "Anti-fingerprinting aplicado."
+
 echo ""
 echo "============================================"
 echo "MIGRAÇÃO CONCLUÍDA!"
 echo "============================================"
 echo ""
-echo "Arquivos copiados:"
-echo "  - compta/paiement.php"
-echo "  - core/ajax/onlineSign.php"
-echo "  - core/lib/company.lib.php"
-echo "  - core/modules/commande/doc/pdf_master_order.modules.php"
-echo "  - core/modules/facture/doc/pdf_master_bill.modules.php"
-echo "  - core/modules/fichinter/doc/pdf_master_inter.modules.php"
-echo "  - core/modules/propale/doc/pdf_master_propal.modules.php"
-echo "  - expedition/card.php"
-echo "  - langs/en_US/propal.lang"
-echo "  - langs/pt_BR/*.lang (70 arquivos)"
-echo "  - public/onlinesign/newonlinesign.php"
-echo "  - theme/modern_dark/"
-echo "  - theme/custom.css.php"
-echo "  - core/tpl/login.tpl.php"
-echo "  - debug_db_raw.php"
-echo "  - debug_multicurrency.php"
+echo "Arquivos copiados do ThemePack:"
+echo " - compta/paiement.php"
+echo " - core/ajax/onlineSign.php"
+echo " - core/lib/company.lib.php"
+echo " - core/modules/commande/doc/pdf_master_order.modules.php"
+echo " - core/modules/facture/doc/pdf_master_bill.modules.php"
+echo " - core/modules/fichinter/doc/pdf_master_inter.modules.php"
+echo " - core/modules/propale/doc/pdf_master_propal.modules.php"
+echo " - expedition/card.php"
+echo " - langs/en_US/propal.lang"
+echo " - langs/pt_BR/*.lang (70 arquivos)"
+echo " - public/onlinesign/newonlinesign.php"
+echo " - theme/modern_dark/"
+echo " - theme/custom.css.php"
+echo " - core/tpl/login.tpl.php"
+echo " - core/tpl/passwordforgotten.tpl.php"
+echo " - debug_db_raw.php"
+echo " - debug_multicurrency.php"
+echo ""
+echo "Anti-fingerprinting aplicado via sed:"
+echo " - main.inc.php: meta author, comentarios CSS/JS"
+echo " - login.tpl.php: versao do title, auth mode, cookie, urlfrom"
+echo " - company.lib.php: Powered by Dolibarr"
+echo " - 4 PDFs master: SetCreator -> nome da empresa"
 echo ""

@@ -249,10 +249,7 @@ $head .= '<style type="text/css">
 		padding-top: 20px;
 		padding-bottom: 20px;
 	}
-	.poweredbypublicpayment {
-		display: none !important;
-	}
-	/* Responsividade para Celulares */
+/* Responsividade para Celulares */
 	@media only screen and (max-width: 767px) {
 		#dolpublictable {
 			width: 95% !important;

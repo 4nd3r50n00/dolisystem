@@ -164,7 +164,7 @@ if ($applicationcustom) {
 	$titleofloginpage = $langs->trans('Login');
 }
 // Title of HTML page must have pattern ' @ (?:Doli[a-zA-Z]+ |)(\\d+)\\.(\\d+)\\.([^\\s]+)' to be detected as THE login page by webviews.
-$titleofloginpage .= ' @ '.$titletruedolibarrversion; // $titletruedolibarrversion is defined by dol_loginfunction in security2.lib.php. We must keep the @, some tools use it to know it is login page and find true dolibarr version.
+// Versao removida do title por seguranca (anti-fingerprinting)
 
 $disablenofollow = 1;
 if (!preg_match('/'.constant('DOL_APPLICATION_TITLE').'/', $title)) {
@@ -348,14 +348,14 @@ $(document).ready(function () {
 
 <!-- Title with version -->
 <div class="center text-3d-container" tabindex="-1">
-    <div class="animate-fade-in-up">
-        <h1 class="text-3d text-5xl md:text-6xl font-black bg-gradient-to-tr from-emerald-400 via-white to-violet-500 bg-clip-text text-transparent tracking-tighter mb-2 pb-2 shine-effect">
-            Anderson Informática
-        </h1>
-        <p class="text-gray-400 text-sm font-medium tracking-widest uppercase mb-8 opacity-60">
-            Sistemas de Gestão
-        </p>
-    </div>
+<div class="animate-fade-in-up">
+<h1 class="text-3d text-5xl md:text-6xl font-black bg-gradient-to-tr from-emerald-400 via-white to-violet-500 bg-clip-text text-transparent tracking-tighter mb-2 pb-2 shine-effect">
+Anderson Informática
+</h1>
+<p class="text-gray-400 text-sm font-medium tracking-widest uppercase mb-8 opacity-60">
+Sistemas de Gestão
+</p>
+</div>
 </div>
 
 
@@ -654,9 +654,7 @@ if (getDolGlobalString('MAIN_EASTER_EGG_COMMITSTRIP')) {
 }
 ?>
 
-<!-- authentication mode = <?php echo $main_authentication ?> -->
-<!-- cookie name used for this session = <?php echo $session_name ?> -->
-<!-- urlfrom in this session = <?php echo isset($_SESSION["urlfrom"]) ? $_SESSION["urlfrom"] : ''; ?> -->
+
 
 <!-- Common footer is not used for login page, this is same than footer but inside login tpl -->
 
