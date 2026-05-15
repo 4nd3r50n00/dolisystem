@@ -237,14 +237,14 @@ configure_mariadb() {
             exit 1
         fi
 
+        log_info "Testando conexão com banco remoto..."
         mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" -p"${DB_PASS}" -e "SELECT 1;" &>/dev/null || {
             log_error "Falha ao conectar ao banco remoto ${DB_HOST}:${DB_PORT} com usuário ${DB_USER}"
+            log_error "Verifique: usuário existe, senha correta, firewall permite conexão"
             exit 1
         }
 
-        mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" -p"${DB_PASS}" <<EOF
-CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-EOF
+        log_info "Conexão validada. O banco será criado automaticamente pelo instalador web em http://${SERVER_IP}/install/"
 
         cat > ${SCRIPT_DIR}/.dolibarr_db_credentials << EOF
 DB_HOST=${DB_HOST}
@@ -651,6 +651,15 @@ show_summary() {
     echo "  Database: $DB_NAME"
     echo "  User: $DB_USER"
     echo "  Senha: ver ${SCRIPT_DIR}/.dolibarr_db_credentials"
+
+    if [[ "$REMOTE_DB" -eq 1 ]]; then
+        echo ""
+        echo -e "${YELLOW}ATENÇÃO - Banco Remoto:${NC}"
+        echo "  O banco de dados será CRIADO automaticamente"
+        echo "  pelo instalador web (passo 1). Use as credenciais"
+        echo "  acima quando solicitado pelo install.php"
+    fi
+
     echo ""
     echo "CREDENCIAIS ADMIN (após instalação web):"
     echo "  Usuário: admin"
