@@ -52,7 +52,7 @@ log_error() {
 ask_db_mode() {
     echo ""
     echo "============================================"
-    echo "  CONFIGURAÇÃO DO BANCO DE DADOS"
+    echo "  INSTALAÇÃO DO SISTEMA"
     echo "============================================"
     echo ""
     echo "Como deseja configurar o banco de dados?"
@@ -75,21 +75,33 @@ ask_db_mode() {
             read -p "  Porta [3306]: " DB_PORT_INPUT
             DB_PORT="${DB_PORT_INPUT:-3306}"
 
-            read -p "  Nome do banco [dolibarr]: " DB_NAME_INPUT
-            DB_NAME="${DB_NAME_INPUT:-dolibarr}"
-
-            read -p "  Usuário do banco [dolibarr_app]: " DB_USER_INPUT
-            DB_USER="${DB_USER_INPUT:-dolibarr_app}"
-
-            read -sp "  Senha do banco: " DB_PASS
             echo ""
-            if [[ -z "$DB_PASS" ]]; then
-                log_error "Senha do banco remoto é obrigatória"
-                exit 1
+            echo "  Testando conectividade com ${DB_HOST}:${DB_PORT}..."
+
+            if command -v nc &>/dev/null; then
+                if ! nc -zv -w5 "$DB_HOST" "$DB_PORT" 2>&1 | grep -q "succeeded\|open"; then
+                    log_error "Não foi possível conectar em ${DB_HOST}:${DB_PORT}"
+                    log_error "Verifique o IP e a porta e tente novamente"
+                    exit 1
+                fi
+            elif command -v timeout &>/dev/null; then
+                if ! timeout 5 bash -c "echo > /dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
+                    log_error "Não foi possível conectar em ${DB_HOST}:${DB_PORT}"
+                    log_error "Verifique o IP e a porta e tente novamente"
+                    exit 1
+                fi
+            else
+                log_warning "Ferramenta de teste não disponível (nc/timeout). Pulando verificação."
             fi
 
+            log_success "Banco de dados remoto acessível!"
+
+            DB_NAME="dolibarr"
+            DB_USER="dolibarr_app"
+            DB_PASS=""
+
             echo ""
-            log_info "Configuração: banco remoto ${DB_HOST}:${DB_PORT}/${DB_NAME} (user: ${DB_USER})"
+            log_info "As credenciais serão solicitadas pelo instalador web (install.php)"
             ;;
         1|"")
             REMOTE_DB=0
@@ -230,21 +242,9 @@ EOF
 
 configure_mariadb() {
     if [[ "$REMOTE_DB" -eq 1 ]]; then
-        log_info "Configurando conexão com banco remoto (${DB_HOST}:${DB_PORT})..."
-
-        if [[ -z "$DB_PASS" ]]; then
-            log_error "Senha do banco remoto não informada. Use --db-pass"
-            exit 1
-        fi
-
-        log_info "Testando conexão com banco remoto..."
-        mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" -p"${DB_PASS}" -e "SELECT 1;" &>/dev/null || {
-            log_error "Falha ao conectar ao banco remoto ${DB_HOST}:${DB_PORT} com usuário ${DB_USER}"
-            log_error "Verifique: usuário existe, senha correta, firewall permite conexão"
-            exit 1
-        }
-
-        log_info "Conexão validada. O banco será criado automaticamente pelo instalador web em http://${SERVER_IP}/install/"
+        log_info "Configuração de banco remoto (${DB_HOST}:${DB_PORT})"
+        log_info "O teste de conectividade foi realizado no menu anterior"
+        log_info "As credenciais serão solicitadas pelo instalador web em http://${SERVER_IP}/install/"
 
         cat > ${SCRIPT_DIR}/.dolibarr_db_credentials << EOF
 DB_HOST=${DB_HOST}
