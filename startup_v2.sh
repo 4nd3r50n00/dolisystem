@@ -96,12 +96,48 @@ ask_db_mode() {
 
             log_success "Banco de dados remoto acessível!"
 
-            DB_NAME="dolibarr"
-            DB_USER="dolibarr_app"
-            DB_PASS=""
+            echo ""
+            echo "  --- Credenciais do Administrador do Banco (root) ---"
+            read -p "  Usuário admin [root]: " DB_ADMIN_USER
+            DB_ADMIN_USER="${DB_ADMIN_USER:-root}"
+
+            read -sp "  Senha do admin: " DB_ADMIN_PASS
+            echo ""
+            if [[ -z "$DB_ADMIN_PASS" ]]; then
+                log_error "Senha do admin é obrigatória"
+                exit 1
+            fi
 
             echo ""
-            log_info "As credenciais serão solicitadas pelo instalador web (install.php)"
+            echo "  --- Criar Banco e Usuário do Aplicativo ---"
+            read -p "  Nome do banco a criar [dolibarr]: " DB_NAME_INPUT
+            DB_NAME="${DB_NAME_INPUT:-dolibarr}"
+
+            read -p "  Nome do usuário do app [dolibarr_app]: " DB_USER_INPUT
+            DB_USER="${DB_USER_INPUT:-dolibarr_app}"
+
+            read -sp "  Senha do usuário do app: " DB_PASS
+            echo ""
+            if [[ -z "$DB_PASS" ]]; then
+                log_error "Senha do usuário do app é obrigatória"
+                exit 1
+            fi
+
+            log_info "Criando banco '${DB_NAME}' e usuário '${DB_USER}'..."
+
+            mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_ADMIN_USER}" -p"${DB_ADMIN_PASS}" <<EOF
+CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
+FLUSH PRIVILEGES;
+EOF
+
+            if [[ $? -eq 0 ]]; then
+                log_success "Banco '${DB_NAME}' e usuário '${DB_USER}' criados com sucesso!"
+            else
+                log_error "Falha ao criar banco/usuário. Verifique as credenciais de admin."
+                exit 1
+            fi
             ;;
         1|"")
             REMOTE_DB=0
@@ -654,10 +690,10 @@ show_summary() {
 
     if [[ "$REMOTE_DB" -eq 1 ]]; then
         echo ""
-        echo -e "${YELLOW}ATENÇÃO - Banco Remoto:${NC}"
-        echo "  O banco de dados será CRIADO automaticamente"
-        echo "  pelo instalador web (passo 1). Use as credenciais"
-        echo "  acima quando solicitado pelo install.php"
+        echo -e "${GREEN}Banco Remoto Configurado:${NC}"
+        echo "  Banco '${DB_NAME}' e usuário '${DB_USER}' criados automaticamente"
+        echo "  pelo script de instalação (não precisa criar no install.php)"
+        echo "  Use as credenciais acima no install.php para continuar"
     fi
 
     echo ""
