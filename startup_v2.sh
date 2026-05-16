@@ -123,13 +123,13 @@ ask_db_mode() {
                     read -p "  Nome do banco a criar [dolibarr]: " DB_NAME_INPUT
                     DB_NAME="${DB_NAME_INPUT:-dolibarr}"
 
-                    read -p "  Nome do usuário do app [dolibarr_app]: " DB_USER_INPUT
+                    read -p "  Nome do usuário do banco [dolibarr_app]: " DB_USER_INPUT
                     DB_USER="${DB_USER_INPUT:-dolibarr_app}"
 
-                    read -sp "  Senha do usuário do app: " DB_PASS
+                    read -sp "  Senha do usuário do banco: " DB_PASS
                     echo ""
                     if [[ -z "$DB_PASS" ]]; then
-                        log_error "Senha do usuário do app é obrigatória"
+                        log_error "Senha do usuário do banco é obrigatória"
                         exit 1
                     fi
 
