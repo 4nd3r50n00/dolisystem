@@ -142,14 +142,14 @@ ask_db_mode() {
 
                     mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_ADMIN_USER}" -p"${DB_ADMIN_PASS}" <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}';
-GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
+CREATE USER IF NOT EXISTS '${DB_USER}'@'${SERVER_IP}' IDENTIFIED BY '${DB_PASS}';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'${SERVER_IP}';
 FLUSH PRIVILEGES;
 EOF
 
                     if [[ $? -eq 0 ]]; then
                         DB_CREATED=1
-                        log_success "Banco '${DB_NAME}' e usuário '${DB_USER}' criados com sucesso!"
+                        log_success "Banco '${DB_NAME}' e usuário '${DB_USER}'@'${SERVER_IP}' criados com sucesso!"
                     else
                         log_error "Falha ao criar banco/usuário. Verifique as credenciais de admin."
                         exit 1
