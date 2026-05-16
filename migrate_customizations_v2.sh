@@ -388,6 +388,30 @@ sed -i '/<!-- urlfrom in this session = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/logi
 sed -i '/if (!getDolGlobalString.*MAIN_HIDE_POWERED_BY.*)/,/^[[:space:]]*}$/c\	\/\/ Powered by removido por seguranca (anti-fingerprinting)' \
     ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php 2>/dev/null || true
 
+# Remover logo default dolibarr_logo.svg das paginas publicas
+sed -i "s|\$urllogopublic = \$dolibarr_main_url_root . '/theme/dolibarr_logo.svg';|// Antifingerprint: removido|g" \
+    ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php
+
+# --- passwordforgotten.tpl.php ---
+
+# Remover logo default logo_white.png fallback (substituir por pixel transparente)
+if grep -q "theme/modern_dark/img/logo_white.png" ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php; then
+    # Criar pixel transparente 1x1 PNG
+    printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82' > ${DOLIBARR_DIR}/htdocs/theme/modern_dark/img/pixel.png
+    # Atualizar referencia
+    sed -i 's|theme/modern_dark/img/logo_white.png|theme/modern_dark/img/pixel.png|g' \
+        ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
+fi
+
+# --- Favicon ---
+
+# Substituir favicons por versao transparente (remove identidade Dolibarr da aba do navegador)
+# ICO minimalista 16x16 transparente (base64 decode)
+echo "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAEElEQVR42mP8z8DwHw4GAwCiRAf5BjX6YgAAAABJRU5ErkJggg==" | base64 -d > /tmp/favicon_empty.png
+# Substituir favicons existentes
+cp -f /tmp/favicon_empty.png ${DOLIBARR_DIR}/htdocs/theme/img/favicon.ico 2>/dev/null || true
+cp -f /tmp/favicon_empty.png ${DOLIBARR_DIR}/htdocs/theme/modern_dark/img/favicon.ico 2>/dev/null || true
+
 # --- PDFs master ---
 
 # Trocar SetCreator de "Dolibarr DOL_VERSION" para "$mysoc->name"
