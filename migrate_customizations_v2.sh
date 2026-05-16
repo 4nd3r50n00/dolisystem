@@ -14,13 +14,24 @@ CREDENTIALS_FILE="${SCRIPT_DIR}/.dolibarr_db_credentials"
 
 if [[ ! -f "$CREDENTIALS_FILE" ]]; then
     echo "[ERRO] Arquivo de credenciais não encontrado: $CREDENTIALS_FILE"
-    echo "       Execute startup.sh install primeiro."
+    echo "       Execute startup_v2.sh install primeiro."
     exit 1
 fi
 
 source "$CREDENTIALS_FILE"
 
-DB_CMD="mysql -h ${DB_HOST} -P ${DB_PORT:-3306} -u ${DB_USER} -p${DB_PASS} ${DB_NAME}"
+DB_PORT="${DB_PORT:-3306}"
+
+CLIENT_INSTALLED=0
+if [[ "$DB_HOST" != "localhost" && "$DB_HOST" != "127.0.0.1" ]]; then
+    if ! command -v mysql &>/dev/null; then
+        echo "[INFO] Banco remoto detectado. Instalando cliente MariaDB temporariamente..."
+        apt update -qq && apt install -y default-mysql-client 2>/dev/null || apt install -y mariadb-client
+        CLIENT_INSTALLED=1
+    fi
+fi
+
+DB_CMD="mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USER} ${DB_NAME}"
 export MYSQL_PWD="$DB_PASS"
 
 echo "============================================"
@@ -391,6 +402,11 @@ for pdffile in \
 done
 
 echo "Anti-fingerprinting aplicado."
+
+if [[ "$CLIENT_INSTALLED" -eq 1 ]]; then
+    echo "[INFO] Removendo cliente MariaDB temporário..."
+    apt remove -y default-mysql-client mariadb-client 2>/dev/null || true
+fi
 
 unset MYSQL_PWD
 
