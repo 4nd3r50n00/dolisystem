@@ -351,8 +351,8 @@ echo "[27/27] Anti-fingerprinting: removendo assinaturas Dolibarr de p√°ginas p√
 
 # --- main.inc.php ---
 
-# Meta author: trocar "Dolibarr Development Team" pelo titulo da aplicacao
-sed -i 's/<meta name="author" content="Dolibarr Development Team">/<meta name="author" content="<?php echo getDolGlobalString('\''MAIN_APPLICATION_TITLE'\'', '\'''\''); ?>">/' \
+# Meta author: usar concatenacao PHP (nao usa <?php echo ... ?> que quebra dentro de codigo PHP)
+sed -i "s/<meta name=\"author\" content=\"Dolibarr Development Team\">/<meta name=\"author\" content=\"'\"'.getDolGlobalString('MAIN_APPLICATION_TITLE', '').'\">'/g" \
     ${DOLIBARR_DIR}/htdocs/main.inc.php
 
 # Comentario CSS
