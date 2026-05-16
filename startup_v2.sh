@@ -19,6 +19,7 @@ DB_PASS=""
 DB_HOST=""
 DB_PORT="3306"
 REMOTE_DB=0
+DB_CREATED=0
 EXPECTED_SHA256=""
 SERVER_IP=$(hostname -I | awk '{print $1}')
 ADMIN_PASS=""
@@ -97,47 +98,86 @@ ask_db_mode() {
             log_success "Banco de dados remoto acessível!"
 
             echo ""
-            echo "  --- Credenciais do Administrador do Banco (root) ---"
-            read -p "  Usuário admin [root]: " DB_ADMIN_USER
-            DB_ADMIN_USER="${DB_ADMIN_USER:-root}"
-
-            read -sp "  Senha do admin: " DB_ADMIN_PASS
+            echo "  O banco já existe ou deseja criar um novo?"
+            echo "    1) Criar NOVO banco e usuário"
+            echo "    2) Banco JÁ EXISTENTE - apenas conectar"
             echo ""
-            if [[ -z "$DB_ADMIN_PASS" ]]; then
-                log_error "Senha do admin é obrigatória"
-                exit 1
-            fi
+            read -p "  Escolha [1/2]: " DB_EXISTS_CHOICE
 
-            echo ""
-            echo "  --- Criar Banco e Usuário do Aplicativo ---"
-            read -p "  Nome do banco a criar [dolibarr]: " DB_NAME_INPUT
-            DB_NAME="${DB_NAME_INPUT:-dolibarr}"
+            case "$DB_EXISTS_CHOICE" in
+                1)
+                    echo ""
+                    echo "  --- Credenciais do Administrador do Banco (root) ---"
+                    read -p "  Usuário admin [root]: " DB_ADMIN_USER
+                    DB_ADMIN_USER="${DB_ADMIN_USER:-root}"
 
-            read -p "  Nome do usuário do app [dolibarr_app]: " DB_USER_INPUT
-            DB_USER="${DB_USER_INPUT:-dolibarr_app}"
+                    read -sp "  Senha do admin: " DB_ADMIN_PASS
+                    echo ""
+                    if [[ -z "$DB_ADMIN_PASS" ]]; then
+                        log_error "Senha do admin é obrigatória"
+                        exit 1
+                    fi
 
-            read -sp "  Senha do usuário do app: " DB_PASS
-            echo ""
-            if [[ -z "$DB_PASS" ]]; then
-                log_error "Senha do usuário do app é obrigatória"
-                exit 1
-            fi
+                    echo ""
+                    echo "  --- Criar Banco e Usuário do Aplicativo ---"
+                    read -p "  Nome do banco a criar [dolibarr]: " DB_NAME_INPUT
+                    DB_NAME="${DB_NAME_INPUT:-dolibarr}"
 
-            log_info "Criando banco '${DB_NAME}' e usuário '${DB_USER}'..."
+                    read -p "  Nome do usuário do app [dolibarr_app]: " DB_USER_INPUT
+                    DB_USER="${DB_USER_INPUT:-dolibarr_app}"
 
-            mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_ADMIN_USER}" -p"${DB_ADMIN_PASS}" <<EOF
+                    read -sp "  Senha do usuário do app: " DB_PASS
+                    echo ""
+                    if [[ -z "$DB_PASS" ]]; then
+                        log_error "Senha do usuário do app é obrigatória"
+                        exit 1
+                    fi
+
+                    log_info "Criando banco '${DB_NAME}' e usuário '${DB_USER}'..."
+
+                    if ! command -v mysql &>/dev/null; then
+                        log_info "Instalando cliente MariaDB para criar banco..."
+                        apt install -y default-mysql-client 2>/dev/null || apt install -y mariadb-client
+                    fi
+
+                    mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_ADMIN_USER}" -p"${DB_ADMIN_PASS}" <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
 FLUSH PRIVILEGES;
 EOF
 
-            if [[ $? -eq 0 ]]; then
-                log_success "Banco '${DB_NAME}' e usuário '${DB_USER}' criados com sucesso!"
-            else
-                log_error "Falha ao criar banco/usuário. Verifique as credenciais de admin."
-                exit 1
-            fi
+                    if [[ $? -eq 0 ]]; then
+                        DB_CREATED=1
+                        log_success "Banco '${DB_NAME}' e usuário '${DB_USER}' criados com sucesso!"
+                    else
+                        log_error "Falha ao criar banco/usuário. Verifique as credenciais de admin."
+                        exit 1
+                    fi
+                    ;;
+                2|"")
+                    echo ""
+                    echo "  --- Credenciais do Banco Existente ---"
+                    read -p "  Nome do banco [dolibarr]: " DB_NAME_INPUT
+                    DB_NAME="${DB_NAME_INPUT:-dolibarr}"
+
+                    read -p "  Usuário do banco [dolibarr_app]: " DB_USER_INPUT
+                    DB_USER="${DB_USER_INPUT:-dolibarr_app}"
+
+                    read -sp "  Senha do banco: " DB_PASS
+                    echo ""
+                    if [[ -z "$DB_PASS" ]]; then
+                        log_error "Senha do banco é obrigatória"
+                        exit 1
+                    fi
+
+                    log_info "Banco existente configurado. Use as credenciais no install.php"
+                    ;;
+                *)
+                    log_error "Opção inválida"
+                    exit 1
+                    ;;
+            esac
             ;;
         1|"")
             REMOTE_DB=0
@@ -690,10 +730,16 @@ show_summary() {
 
     if [[ "$REMOTE_DB" -eq 1 ]]; then
         echo ""
-        echo -e "${GREEN}Banco Remoto Configurado:${NC}"
-        echo "  Banco '${DB_NAME}' e usuário '${DB_USER}' criados automaticamente"
-        echo "  pelo script de instalação (não precisa criar no install.php)"
-        echo "  Use as credenciais acima no install.php para continuar"
+        if [[ "$DB_CREATED" -eq 1 ]]; then
+            echo -e "${GREEN}Banco Remoto Configurado:${NC}"
+            echo "  Banco '${DB_NAME}' e usuário '${DB_USER}' criados automaticamente"
+            echo "  pelo script de instalação (não precisa criar no install.php)"
+            echo "  Use as credenciais acima no install.php para continuar"
+        else
+            echo -e "${GREEN}Banco Remoto Existente:${NC}"
+            echo "  Banco '${DB_NAME}' já existe no servidor remoto"
+            echo "  Use as credenciais acima no install.php para conectar"
+        fi
     fi
 
     echo ""
@@ -712,6 +758,18 @@ show_summary() {
     echo "  3. Execute: rm -rf /var/www/dolibarr-23.0.2/htdocs/install/"
     echo "  4. Execute: touch /var/www/dolibarr-23.0.2/htdocs/documents/install.lock"
     echo ""
+}
+
+# =============================================================================
+# Limpar cliente MariaDB (apenas para modo remoto)
+# =============================================================================
+
+cleanup_mariadb_client() {
+    if [[ "$REMOTE_DB" -eq 1 ]]; then
+        log_info "Removendo cliente MariaDB do servidor App..."
+        apt remove -y default-mysql-client mariadb-client 2>/dev/null || true
+        log_success "Cliente MariaDB removido do servidor App"
+    fi
 }
 
 # =============================================================================
@@ -822,6 +880,8 @@ main() {
         start_services
 
         show_summary
+
+        cleanup_mariadb_client
         ;;
 
     update)
