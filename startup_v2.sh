@@ -726,51 +726,22 @@ EOF
 # =============================================================================
 
 show_summary() {
-    echo ""
-    echo "============================================"
-    echo -e "${GREEN}INSTALAÇÃO CONCLUÍDA!${NC}"
-    echo "============================================"
-    echo ""
-    echo "ACESSO AO DOLIBARR:"
-    echo "  URL de instalação: http://${SERVER_IP}/install/"
-    echo "  URL de acesso: http://${SERVER_IP}/"
-    echo ""
-    echo "CREDENCIAIS DO BANCO:"
-    echo "  Host: ${DB_HOST}:${DB_PORT}"
-    echo "  Database: $DB_NAME"
-    echo "  User: $DB_USER"
-    echo "  Senha: ver ${SCRIPT_DIR}/.dolibarr_db_credentials"
-
-    if [[ "$REMOTE_DB" -eq 1 ]]; then
-        echo ""
-        if [[ "$DB_CREATED" -eq 1 ]]; then
-            echo -e "${GREEN}Banco Remoto Configurado:${NC}"
-            echo "  Banco '${DB_NAME}' e usuário '${DB_USER}' criados automaticamente"
-            echo "  pelo script de instalação (não precisa criar no install.php)"
-            echo "  Use as credenciais acima no install.php para continuar"
-        else
-            echo -e "${GREEN}Banco Remoto Existente:${NC}"
-            echo "  Banco '${DB_NAME}' já existe no servidor remoto"
-            echo "  Use as credenciais acima no install.php para conectar"
-        fi
-    fi
-
-    echo ""
-    echo "CREDENCIAIS ADMIN (após instalação web):"
-    echo "  Usuário: admin"
-    echo "  Senha: (definida na instalação web)"
-    echo ""
-    echo "ARQUIVOS DE CONFIGURAÇÃO:"
-    echo "  - Database: ${SCRIPT_DIR}/.dolibarr_db_credentials"
-    echo "  - Admin: ${SCRIPT_DIR}/.dolibarr_admin"
-    echo "  - VirtualHost: /etc/apache2/sites-available/dolibarr.conf"
-    echo ""
-    echo "PRÓXIMOS PASSOS:"
-    echo "  1. Acesse http://${SERVER_IP}/install/"
-    echo "  2. Complete a instalação pelo navegador"
-    echo "  3. Execute: rm -rf /var/www/dolibarr-23.0.2/htdocs/install/"
-    echo "  4. Execute: touch /var/www/dolibarr-23.0.2/htdocs/documents/install.lock"
-    echo ""
+echo ""
+echo "============================================"
+echo -e "${GREEN}INSTALAÇÃO CONCLUÍDA!${NC}"
+echo "============================================"
+echo ""
+echo "BANCO DE DADOS:"
+echo " ${DB_HOST}:${DB_PORT}/${DB_NAME} (${DB_USER})"
+echo " Senha: ver ${SCRIPT_DIR}/.dolibarr_db_credentials"
+echo ""
+echo "PRÓXIMOS PASSOS:"
+echo " 1. Acesse http://${SERVER_IP}/install/"
+echo " 2. Complete a instalação pelo navegador"
+echo " 3. rm -rf /var/www/dolibarr-23.0.2/htdocs/install/"
+echo " 4. touch /var/www/dolibarr-23.0.2/htdocs/documents/install.lock"
+echo " 5. bash ${SCRIPT_DIR}/migrate_customizations_v2.sh"
+echo ""
 }
 
 # =============================================================================
@@ -778,11 +749,9 @@ show_summary() {
 # =============================================================================
 
 cleanup_mariadb_client() {
-    if [[ "$REMOTE_DB" -eq 1 ]]; then
-        log_info "Removendo cliente MariaDB do servidor App..."
-        apt remove -y default-mysql-client mariadb-client &>/dev/null || true
-        log_success "Cliente MariaDB removido do servidor App"
-    fi
+if [[ "$REMOTE_DB" -eq 1 ]]; then
+apt remove -y default-mysql-client mariadb-client &>/dev/null || true
+fi
 }
 
 # =============================================================================
@@ -893,9 +862,9 @@ configure_timezone
         create_admin
         start_services
 
-        show_summary
+cleanup_mariadb_client
 
-        cleanup_mariadb_client
+show_summary
         ;;
 
     update)
