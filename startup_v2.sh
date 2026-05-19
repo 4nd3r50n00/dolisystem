@@ -767,7 +767,7 @@ show_summary() {
 cleanup_mariadb_client() {
     if [[ "$REMOTE_DB" -eq 1 ]]; then
         log_info "Removendo cliente MariaDB do servidor App..."
-        apt remove -y default-mysql-client mariadb-client 2>/dev/null || true
+        apt remove -y default-mysql-client mariadb-client &>/dev/null || true
         log_success "Cliente MariaDB removido do servidor App"
     fi
 }

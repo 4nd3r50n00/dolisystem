@@ -13,22 +13,23 @@ THEMEPACK_DIR="${SCRIPT_DIR}/ThemePack"
 CREDENTIALS_FILE="${SCRIPT_DIR}/.dolibarr_db_credentials"
 
 if [[ ! -f "$CREDENTIALS_FILE" ]]; then
-    echo "[ERRO] Arquivo de credenciais não encontrado: $CREDENTIALS_FILE"
-    echo "       Execute startup_v2.sh install primeiro."
-    exit 1
+echo "[ERRO] Arquivo de credenciais não encontrado: $CREDENTIALS_FILE"
+echo " Execute startup_v2.sh install primeiro."
+exit 1
 fi
 
 source "$CREDENTIALS_FILE"
 
 DB_PORT="${DB_PORT:-3306}"
+SKIP_SQL=0
 
 CLIENT_INSTALLED=0
 if [[ "$DB_HOST" != "localhost" && "$DB_HOST" != "127.0.0.1" ]]; then
-    if ! command -v mysql &>/dev/null; then
-        echo "[INFO] Banco remoto detectado. Instalando cliente MariaDB temporariamente..."
-        apt update -qq && apt install -y default-mysql-client 2>/dev/null || apt install -y mariadb-client
-        CLIENT_INSTALLED=1
-    fi
+if ! command -v mysql &>/dev/null; then
+echo "[INFO] Banco remoto detectado. Instalando cliente MariaDB temporariamente..."
+apt update -qq && apt install -y default-mysql-client 2>/dev/null || apt install -y mariadb-client
+CLIENT_INSTALLED=1
+fi
 fi
 
 DB_CMD="mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USER} ${DB_NAME}"
@@ -39,6 +40,31 @@ echo "MIGRAÇÃO DE CUSTOMIZAÇÕES - DOLIBARR 23.0.2"
 echo "============================================"
 echo "Banco: ${DB_HOST}:${DB_PORT:-3306}/${DB_NAME} (user: ${DB_USER})"
 echo ""
+
+# Verificar se tabelas do Dolibarr existem (install.php ja foi executado)
+TABLE_CHECK=$($DB_CMD -e "SHOW TABLES LIKE 'llx_const';" 2>/dev/null || true)
+if [[ -z "$TABLE_CHECK" ]]; then
+echo "[AVISO] Tabelas do Dolibarr nao encontradas no banco."
+echo " Execute o install.php primeiro, depois rode este script."
+echo " Pulando comandos SQL (apenas arquivos serao copiados)."
+SKIP_SQL=1
+fi
+
+# =============================================================================
+# Funcao: verificar sintaxe PHP apos sed
+# =============================================================================
+php_syntax_check() {
+local file="$1"
+local desc="$2"
+if ! php -l "$file" &>/dev/null; then
+echo "[ERRO] $desc: sintaxe PHP invalida apos modificacao!"
+echo " Restaurando backup..."
+cp -f "${file}.bak" "$file"
+echo "[ERRO] Restaurado. O sed produziu PHP invalido."
+return 1
+fi
+return 0
+}
 
 # Copiar arquivos modificados
 echo "[1/27] Copiando compta/paiement.php..."
@@ -96,22 +122,22 @@ echo "[18/27] Configurando CSP do Apache para Tailwind CSS..."
 a2dissite dolibarr.conf 2>/dev/null || true
 cat > /etc/apache2/sites-available/dolibarr.conf << 'CSPEOF'
 <VirtualHost *:80>
-    ServerAdmin admin@localhost
-    DocumentRoot /var/www/dolibarr-23.0.2/htdocs
+ServerAdmin admin@localhost
+DocumentRoot /var/www/dolibarr-23.0.2/htdocs
 
-    <Directory /var/www/dolibarr-23.0.2/htdocs>
-        Options -Indexes -FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
+<Directory /var/www/dolibarr-23.0.2/htdocs>
+Options -Indexes -FollowSymLinks
+AllowOverride All
+Require all granted
+</Directory>
 
-    <FilesMatch "^\.">
-        Require all denied
-    </FilesMatch>
+<FilesMatch "^\.">
+Require all denied
+</FilesMatch>
 
-    <Directory /var/www/dolibarr-23.0.2/htdocs/conf>
-        Require all denied
-    </Directory>
+<Directory /var/www/dolibarr-23.0.2/htdocs/conf>
+Require all denied
+</Directory>
 
 <Directory /var/www/dolibarr-23.0.2/htdocs/data>
 Require all denied
@@ -122,37 +148,56 @@ Require ip 127.0.0.1 ::1
 Require all denied
 </FilesMatch>
 
-    ErrorLog ${APACHE_LOG_DIR}/dolibarr-error.log
-    CustomLog ${APACHE_LOG_DIR}/dolibarr-access.log combined
+ErrorLog ${APACHE_LOG_DIR}/dolibarr-error.log
+CustomLog ${APACHE_LOG_DIR}/dolibarr-access.log combined
 
-    Header always set X-Frame-Options "SAMEORIGIN"
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-XSS-Protection "1; mode=block"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:;"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:;"
 </VirtualHost>
 CSPEOF
 a2ensite dolibarr.conf 2>/dev/null || true
 
 echo "[19/27] Configurando valores padrão de endereço na criação de clientes..."
 if ! grep -q "mysoc->zip" ${DOLIBARR_DIR}/htdocs/societe/card.php; then
-	sed -i '/\$object->zip = GETPOST.*zipcode/a\
-		if ($action == '\''create'\'' \&\& empty($object->zip)) {\
-			$object->zip = $mysoc->zip;\
-		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
-	sed -i '/\$object->town = GETPOST.*town/a\
-		if ($action == '\''create'\'' \&\& empty($object->town)) {\
-			$object->town = $mysoc->town;\
-		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
-	sed -i '/\$object->state_id = GETPOSTINT.*state_id/a\
-		if ($action == '\''create'\'' \&\& empty($object->state_id)) {\
-			$object->state_id = $mysoc->state_id;\
-		}' ${DOLIBARR_DIR}/htdocs/societe/card.php
+sed -i '/\$object->zip = GETPOST.*zipcode/a\
+if ($action == '\''create'\'' \&\& empty($object->zip)) {\
+$object->zip = $mysoc->zip;\
+}' ${DOLIBARR_DIR}/htdocs/societe/card.php
+sed -i '/\$object->town = GETPOST.*town/a\
+if ($action == '\''create'\'' \&\& empty($object->town)) {\
+$object->town = $mysoc->town;\
+}' ${DOLIBARR_DIR}/htdocs/societe/card.php
+sed -i '/\$object->state_id = GETPOSTINT.*state_id/a\
+if ($action == '\''create'\'' \&\& empty($object->state_id)) {\
+$object->state_id = $mysoc->state_id;\
+}' ${DOLIBARR_DIR}/htdocs/societe/card.php
 fi
 
 echo "[20/27] Corrigindo permissões..."
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/theme/modern_dark
 chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/documents
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/compta
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/core/ajax
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/core/lib
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/expedition/card.php
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/langs/en_US/propal.lang
+chown -R www-data:www-data ${DOLIBARR_DIR}/htdocs/langs/pt_BR/*.lang
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/public/onlinesign/newonlinesign.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/theme/custom.css.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/debug_db_raw.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/debug_multicurrency.php
+
+# --- Comandos SQL (protegidos por SKIP_SQL) ---
+if [[ "$SKIP_SQL" -ne 1 ]]; then
 
 echo "[21/27] Selecionando tema modern_dark..."
 $DB_CMD -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('MAIN_THEME', 'modern_dark', 1, 'chaine', 0, 'Tema via migrate') ON DUPLICATE KEY UPDATE value='modern_dark';" 2>/dev/null
@@ -327,12 +372,12 @@ $DB_CMD <<'EOSQL'
 
 -- Verificar e criar llx_categorie_propal se não existir
 CREATE TABLE IF NOT EXISTS llx_categorie_propal (
-  fk_categorie INTEGER NOT NULL,
-  fk_propal INTEGER NOT NULL,
-  import_key VARCHAR(14) DEFAULT NULL,
-  PRIMARY KEY (fk_categorie, fk_propal),
-  KEY idx_llx_categorie_propal_fk_propal (fk_propal),
-  KEY idx_llx_categorie_propal_fk_categorie (fk_categorie)
+fk_categorie INTEGER NOT NULL,
+fk_propal INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_propal),
+KEY idx_llx_categorie_propal_fk_propal (fk_propal),
+KEY idx_llx_categorie_propal_fk_categorie (fk_categorie)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 EOSQL
@@ -347,60 +392,79 @@ ADD COLUMN IF NOT EXISTS tipo_chave_pix ENUM('CPF','CNPJ','EMAIL','TELEFONE','AL
 ADD COLUMN IF NOT EXISTS chave_pix VARCHAR(100) NULL;
 " 2>/dev/null
 
+else
+echo "[AVISO] Comandos SQL pulados (tabelas nao existem)."
+echo " Rode install.php primeiro, depois execute este script novamente para aplicar o SQL."
+fi
+
 echo "[27/27] Anti-fingerprinting: removendo assinaturas Dolibarr de páginas públicas..."
 
 # --- main.inc.php ---
 
-# Meta author: usar concatenacao PHP (nao usa <?php echo ... ?> que quebra dentro de codigo PHP)
-sed -i "s/<meta name=\"author\" content=\"Dolibarr Development Team\">/<meta name=\"author\" content=\"'\"'.getDolGlobalString('MAIN_APPLICATION_TITLE', '').'\">'/g" \
-    ${DOLIBARR_DIR}/htdocs/main.inc.php
+# Meta author: usar perl para substituir APENAS o texto dentro da string PHP
+# A linha original: print '<meta name="author" content="Dolibarr Development Team">'."\n";
+# Resultado:       print '<meta name="author" content="'.getDolGlobalString('MAIN_APPLICATION_TITLE', '').'">'."\n";
+# perl lida com aspas corretamente, sed quebra dentro de strings PHP
+cp -f ${DOLIBARR_DIR}/htdocs/main.inc.php ${DOLIBARR_DIR}/htdocs/main.inc.php.bak
+perl -pi -e "s/Dolibarr Development Team/'.getDolGlobalString('MAIN_APPLICATION_TITLE', '').'/g" \
+${DOLIBARR_DIR}/htdocs/main.inc.php
+php_syntax_check ${DOLIBARR_DIR}/htdocs/main.inc.php "main.inc.php meta author" || true
 
 # Comentario CSS
 sed -i "s/Includes CSS for Dolibarr theme/Includes CSS/" \
-    ${DOLIBARR_DIR}/htdocs/main.inc.php
+${DOLIBARR_DIR}/htdocs/main.inc.php
 
-# Comentario JS (com layout)
+# Comentario JS (com layout) - DEVE rodar ANTES do sed generico
 sed -i "s/Includes JS of Dolibarr (browser layout/Includes JS (browser layout/" \
-    ${DOLIBARR_DIR}/htdocs/main.inc.php
+${DOLIBARR_DIR}/htdocs/main.inc.php
 
 # Comentario JS (sem layout)
 sed -i "s/Includes JS of Dolibarr/Includes JS/" \
-    ${DOLIBARR_DIR}/htdocs/main.inc.php
+${DOLIBARR_DIR}/htdocs/main.inc.php
 
 # Comentario JS Footer
 sed -i "s/Includes JS Footer of Dolibarr/Includes JS Footer/" \
-    ${DOLIBARR_DIR}/htdocs/main.inc.php
+${DOLIBARR_DIR}/htdocs/main.inc.php
+
+php_syntax_check ${DOLIBARR_DIR}/htdocs/main.inc.php "main.inc.php comentarios" || true
 
 # --- login.tpl.php ---
 
 # Remover versao do title (linha com @ $titletruedolibarrversion)
+cp -f ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php.bak
 sed -i "s/\\$titleofloginpage \.=' @ '\\.'\\$titletruedolibarrversion;/\\/\\/ Versao removida do title por seguranca (anti-fingerprinting)/" \
-    ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
 
 # Remover comentarios HTML que expoe auth mode, cookie name e urlfrom
 sed -i '/<!-- authentication mode = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
 sed -i '/<!-- cookie name used for this session = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
 sed -i '/<!-- urlfrom in this session = /d' ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
 
+php_syntax_check ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php "login.tpl.php" || true
+
 # --- company.lib.php ---
 
 # Remover bloco "Powered by Dolibarr" (link dolibarr.org + logo)
-sed -i '/if (!getDolGlobalString.*MAIN_HIDE_POWERED_BY.*)/,/^[[:space:]]*}$/c\	\/\/ Powered by removido por seguranca (anti-fingerprinting)' \
-    ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php 2>/dev/null || true
+# Padrao corrigido: fecha no } e nao em linha em branco (evita overshoot)
+cp -f ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php.bak
+sed -i '/if (!getDolGlobalString.*MAIN_HIDE_POWERED_BY.*)/,/^[[:space:]]*}[[:space:]]*$/c\ \/\/ Powered by removido por seguranca (anti-fingerprinting)' \
+${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php 2>/dev/null || true
 
 # Remover logo default dolibarr_logo.svg das paginas publicas
 sed -i "s|\$urllogopublic = \$dolibarr_main_url_root . '/theme/dolibarr_logo.svg';|// Antifingerprint: removido|g" \
-    ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php
+${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php
+
+php_syntax_check ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php "company.lib.php" || true
 
 # --- passwordforgotten.tpl.php ---
 
 # Remover logo default logo_white.png fallback (substituir por pixel transparente)
 if grep -q "theme/modern_dark/img/logo_white.png" ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php; then
-    # Criar pixel transparente 1x1 PNG
-    printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82' > ${DOLIBARR_DIR}/htdocs/theme/modern_dark/img/pixel.png
-    # Atualizar referencia
-    sed -i 's|theme/modern_dark/img/logo_white.png|theme/modern_dark/img/pixel.png|g' \
-        ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
+# Criar pixel transparente 1x1 PNG
+printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82' > ${DOLIBARR_DIR}/htdocs/theme/modern_dark/img/pixel.png
+# Atualizar referencia
+sed -i 's|theme/modern_dark/img/logo_white.png|theme/modern_dark/img/pixel.png|g' \
+${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
 fi
 
 # --- Favicon ---
@@ -416,20 +480,36 @@ cp -f /tmp/favicon_empty.png ${DOLIBARR_DIR}/htdocs/theme/modern_dark/img/favico
 
 # Trocar SetCreator de "Dolibarr DOL_VERSION" para "$mysoc->name"
 for pdffile in \
-    ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php \
-    ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php \
-    ${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php \
-    ${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php; do
-    if [ -f "$pdffile" ]; then
-        sed -i 's/\$pdf->SetCreator("Dolibarr "\.DOL_VERSION)/$pdf->SetCreator($mysoc->name)/' "$pdffile"
-    fi
+${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php \
+${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php \
+${DOLIBARR_DIR}/htdocs/core/modules/propale/doc/pdf_master_propal.modules.php \
+${DOLIBARR_DIR}/htdocs/core/modules/fichinter/doc/pdf_master_inter.modules.php; do
+if [ -f "$pdffile" ]; then
+sed -i 's/\$pdf->SetCreator("Dolibarr "\.DOL_VERSION)/$pdf->SetCreator($mysoc->name)/' "$pdffile"
+fi
 done
+
+# Corrigir permissões dos arquivos modificados por sed
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/main.inc.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
+
+# Limpar backups
+rm -f ${DOLIBARR_DIR}/htdocs/main.inc.php.bak
+rm -f ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php.bak
+rm -f ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php.bak
 
 echo "Anti-fingerprinting aplicado."
 
+# Reiniciar Apache para carregar nova configuracao (CSP, vhost, OPcache)
+echo "[INFO] Reiniciando Apache e PHP-FPM..."
+systemctl restart php8.4-fpm 2>/dev/null || true
+systemctl restart apache2
+
 if [[ "$CLIENT_INSTALLED" -eq 1 ]]; then
-    echo "[INFO] Removendo cliente MariaDB temporário..."
-    apt remove -y default-mysql-client mariadb-client 2>/dev/null || true
+echo "[INFO] Removendo cliente MariaDB temporário..."
+apt remove -y default-mysql-client mariadb-client &>/dev/null || true
 fi
 
 unset MYSQL_PWD
@@ -458,9 +538,10 @@ echo " - core/tpl/passwordforgotten.tpl.php"
 echo " - debug_db_raw.php"
 echo " - debug_multicurrency.php"
 echo ""
-echo "Anti-fingerprinting aplicado via sed:"
-echo " - main.inc.php: meta author, comentarios CSS/JS"
+echo "Anti-fingerprinting aplicado via perl/sed:"
+echo " - main.inc.php: meta author (perl), comentarios CSS/JS"
 echo " - login.tpl.php: versao do title, auth mode, cookie, urlfrom"
-echo " - company.lib.php: Powered by Dolibarr"
+echo " - company.lib.php: Powered by Dolibarr, dolibarr_logo.svg"
 echo " - 4 PDFs master: SetCreator -> nome da empresa"
+echo " - Favicon: substituido por versao transparente"
 echo ""
