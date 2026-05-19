@@ -76,6 +76,9 @@ cp -f ${THEMEPACK_DIR}/htdocs/core/ajax/onlineSign.php ${DOLIBARR_DIR}/htdocs/co
 echo "[3/27] Copiando core/lib/company.lib.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/lib/company.lib.php ${DOLIBARR_DIR}/htdocs/core/lib/
 
+echo "[3b/27] Copiando core/lib/functions.lib.php (mapeamento moeda→ícone)..."
+cp -f ${THEMEPACK_DIR}/htdocs/core/lib/functions.lib.php ${DOLIBARR_DIR}/htdocs/core/lib/
+
 echo "[4/27] Copiando core/modules/commande/doc/..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/modules/commande/doc/pdf_master_order.modules.php ${DOLIBARR_DIR}/htdocs/core/modules/commande/doc/
 
