@@ -196,23 +196,36 @@ EOF
 # =============================================================================
 
 check_root() {
-    if [[ $EUID -ne 0 ]]; then
-        log_error "Este script precisa ser executado como root"
-        exit 1
-    fi
+if [[ $EUID -ne 0 ]]; then
+log_error "Este script precisa ser executado como root"
+exit 1
+fi
+}
+
+configure_timezone() {
+local TZ="America/Sao_Paulo"
+if [[ "$(cat /etc/timezone 2>/dev/null)" != "$TZ" ]]; then
+log_info "Configurando timezone do sistema para $TZ..."
+ln -sf /usr/share/zoneinfo/$TZ /etc/localtime
+echo "$TZ" > /etc/timezone
+dpkg-reconfigure -f noninteractive tzdata 2>/dev/null || true
+log_success "Timezone do sistema: $TZ"
+else
+log_success "Timezone já configurado: $TZ"
+fi
 }
 
 check_os() {
-    if [[ -f /etc/debian_version ]]; then
-        OS="debian"
-        log_info "Sistema detectado: Debian/Ubuntu"
-    elif [[ -f /etc/redhat-release ]]; then
-        OS="rhel"
-        log_info "Sistema detectado: RHEL/CentOS"
-    else
-        log_error "Sistema não suportado"
-        exit 1
-    fi
+if [[ -f /etc/debian_version ]]; then
+OS="debian"
+log_info "Sistema detectado: Debian/Ubuntu"
+elif [[ -f /etc/redhat-release ]]; then
+OS="rhel"
+log_info "Sistema detectado: RHEL/CentOS"
+else
+log_error "Sistema não suportado"
+exit 1
+fi
 }
 
 # =============================================================================
@@ -843,8 +856,9 @@ main() {
 
     case "$COMMAND" in
     install)
-        check_root
-        check_os
+check_root
+check_os
+configure_timezone
 
         if [[ "$REMOTE_DB" -eq 0 && -z "$DB_HOST" ]]; then
             ask_db_mode
