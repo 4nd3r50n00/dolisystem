@@ -740,7 +740,7 @@ echo " 1. Acesse http://${SERVER_IP}/install/"
 echo " 2. Complete a instalação pelo navegador"
 echo " 3. rm -rf /var/www/dolibarr-23.0.2/htdocs/install/"
 echo " 4. touch /var/www/dolibarr-23.0.2/htdocs/documents/install.lock"
-echo " 5. bash ${SCRIPT_DIR}/migrate_customizations_v2.sh"
+echo " 5. bash ${SCRIPT_DIR}/custom.sh"
 echo ""
 }
 

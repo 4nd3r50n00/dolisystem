@@ -14,7 +14,7 @@ CREDENTIALS_FILE="${SCRIPT_DIR}/.dolibarr_db_credentials"
 
 if [[ ! -f "$CREDENTIALS_FILE" ]]; then
 echo "[ERRO] Arquivo de credenciais não encontrado: $CREDENTIALS_FILE"
-echo " Execute startup_v2.sh install primeiro."
+echo " Execute autoinstall.sh install primeiro."
 exit 1
 fi
 
