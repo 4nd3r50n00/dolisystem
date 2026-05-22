@@ -273,6 +273,11 @@ ON DUPLICATE KEY UPDATE value = '15';
 -- ============================================
 -- MODELOS PDF
 -- ============================================
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_DOCUMENTS_LOGO_HEIGHT', '13', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = '13';
+INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('MAIN_PDF_FRAME_CORNER_RADIUS', '1', 1, 'chaine', 0)
+ON DUPLICATE KEY UPDATE value = '1';
+
 INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('EXPEDITION_ADDON_PDF', 'espadon', 1, 'chaine', 0)
 ON DUPLICATE KEY UPDATE value = 'espadon';
 INSERT INTO llx_const (name, value, entity, type, visible) VALUES ('STOCK_ADDON_PDF', 'standard_stock', 1, 'chaine', 0)

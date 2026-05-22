@@ -63,6 +63,7 @@ O script faz:
 - Aplica anti-fingerprinting (remove referências ao Dolibarr no HTML)
 - Configura tema `modern_dark` como padrão
 - Ativa modelos PDF master
+- Configura PDF: logo 13mm altura, molduras com cantos arredondados
 - Insere configurações no banco (via `MYSQL_PWD`, nunca `-p` na CLI)
 - Se banco remoto detectado, instala temporariamente `default-mysql-client`, executa SQL, remove o cliente
 - Reinicia Apache no final
@@ -91,6 +92,13 @@ O script faz:
 ### 2.4 Mapeamento Moeda → Ícone FontAwesome
 
 Adicionado em `functions.lib.php`: BRL→dollar-sign, EUR→euro-sign, GBP→pound-sign, RUB→ruble-sign, TRY→lira-sign, JPY→yen-sign, multicurrency→coins.
+
+### 2.5 Configurações Padrão de PDF
+
+| Constante | Valor | Descrição |
+|-----------|-------|-----------|
+| `MAIN_DOCUMENTS_LOGO_HEIGHT` | `13` (mm) | Altura do logo nos PDFs (padrão Dolibarr: 20mm). Logo 6:1 fica ~80mm largura |
+| `MAIN_PDF_FRAME_CORNER_RADIUS` | `1` | Molduras com cantos arredondados (0=quadrado, 1=sutil, 2=médio, 3=pronunciado) |
 
 ---
 
