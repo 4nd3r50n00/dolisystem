@@ -115,11 +115,11 @@ cp -f ${THEMEPACK_DIR}/htdocs/core/tpl/login.tpl.php ${DOLIBARR_DIR}/htdocs/core
 echo "[15/27] Copiando core/tpl/passwordforgotten.tpl.php..."
 cp -f ${THEMEPACK_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php ${DOLIBARR_DIR}/htdocs/core/tpl/
 
-echo "[16/27] Copiando debug_db_raw.php..."
-cp -f ${THEMEPACK_DIR}/htdocs/debug_db_raw.php ${DOLIBARR_DIR}/htdocs/
+# [C2] DEBUG: echo "[16/27] Copiando debug_db_raw.php..."
+# [C2] DEBUG: cp -f ${THEMEPACK_DIR}/htdocs/debug_db_raw.php ${DOLIBARR_DIR}/htdocs/
 
-echo "[17/27] Copiando debug_multicurrency.php..."
-cp -f ${THEMEPACK_DIR}/htdocs/debug_multicurrency.php ${DOLIBARR_DIR}/htdocs/
+# [C2] DEBUG: echo "[17/27] Copiando debug_multicurrency.php..."
+# [C2] DEBUG: cp -f ${THEMEPACK_DIR}/htdocs/debug_multicurrency.php ${DOLIBARR_DIR}/htdocs/
 
 echo "[18/27] Configurando CSP do Apache para Tailwind CSS..."
 a2dissite dolibarr.conf 2>/dev/null || true
@@ -196,8 +196,8 @@ chown www-data:www-data ${DOLIBARR_DIR}/htdocs/public/onlinesign/newonlinesign.p
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/theme/custom.css.php
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
-chown www-data:www-data ${DOLIBARR_DIR}/htdocs/debug_db_raw.php
-chown www-data:www-data ${DOLIBARR_DIR}/htdocs/debug_multicurrency.php
+# [C2] chown www-data:www-data ${DOLIBARR_DIR}/htdocs/debug_db_raw.php
+# [C2] chown www-data:www-data ${DOLIBARR_DIR}/htdocs/debug_multicurrency.php
 
 # --- Comandos SQL (protegidos por SKIP_SQL) ---
 if [[ "$SKIP_SQL" -ne 1 ]]; then
@@ -388,6 +388,38 @@ KEY idx_llx_categorie_propal_fk_propal (fk_propal),
 KEY idx_llx_categorie_propal_fk_categorie (fk_categorie)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Criar tabela do módulo Knowledge Management (ModuleBuilder não gera SQLs)
+CREATE TABLE IF NOT EXISTS llx_knowledgemanagement_knowledgerecord (
+rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
+ref VARCHAR(128) NOT NULL DEFAULT '(PROV)',
+entity INTEGER NOT NULL DEFAULT 1,
+question TEXT NOT NULL,
+lang VARCHAR(6) DEFAULT NULL,
+answer TEXT DEFAULT NULL,
+fk_c_ticket_category INTEGER DEFAULT NULL,
+date_creation DATETIME NOT NULL,
+tms TIMESTAMP DEFAULT NULL,
+last_main_doc VARCHAR(255) DEFAULT NULL,
+fk_user_creat INTEGER NOT NULL,
+fk_user_modif INTEGER DEFAULT NULL,
+fk_user_valid INTEGER DEFAULT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+model_pdf VARCHAR(255) DEFAULT NULL,
+status INTEGER NOT NULL DEFAULT 0,
+KEY idx_km_knowledgerecord_ref (ref),
+KEY idx_km_knowledgerecord_entity (entity),
+KEY idx_km_knowledgerecord_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_knowledgemanagement (
+fk_categorie INTEGER NOT NULL,
+fk_knowledgemanagement INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_knowledgemanagement),
+KEY idx_llx_categorie_km_fk_km (fk_knowledgemanagement),
+KEY idx_llx_categorie_km_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 EOSQL
 
 echo "[25/27] Inserindo método de pagamento PIX..."
@@ -543,8 +575,8 @@ echo " - theme/modern_dark/"
 echo " - theme/custom.css.php"
 echo " - core/tpl/login.tpl.php"
 echo " - core/tpl/passwordforgotten.tpl.php"
-echo " - debug_db_raw.php"
-echo " - debug_multicurrency.php"
+#echo " - debug_db_raw.php"
+#echo " - debug_multicurrency.php"
 echo ""
 echo "Anti-fingerprinting aplicado via perl/sed:"
 echo " - main.inc.php: meta author (perl), comentarios CSS/JS"
