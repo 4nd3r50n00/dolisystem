@@ -388,6 +388,16 @@ KEY idx_llx_categorie_propal_fk_propal (fk_propal),
 KEY idx_llx_categorie_propal_fk_categorie (fk_categorie)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Criar tabela de categorias para pedidos de venda (faltava)
+CREATE TABLE IF NOT EXISTS llx_categorie_order (
+fk_categorie INTEGER NOT NULL,
+fk_order INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_order),
+KEY idx_llx_categorie_order_fk_order (fk_order),
+KEY idx_llx_categorie_order_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Criar tabela do módulo Knowledge Management (ModuleBuilder não gera SQLs)
 CREATE TABLE IF NOT EXISTS llx_knowledgemanagement_knowledgerecord (
 rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
