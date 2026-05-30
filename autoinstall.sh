@@ -140,12 +140,14 @@ ask_db_mode() {
                         apt install -y default-mysql-client 2>/dev/null || apt install -y mariadb-client
                     fi
 
-                    mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_ADMIN_USER}" -p"${DB_ADMIN_PASS}" <<EOF
+                    export MYSQL_PWD="${DB_ADMIN_PASS}"
+                    mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_ADMIN_USER}" <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${DB_USER}'@'${SERVER_IP}' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'${SERVER_IP}';
 FLUSH PRIVILEGES;
 EOF
+                    unset MYSQL_PWD
 
                     if [[ $? -eq 0 ]]; then
                         DB_CREATED=1
@@ -324,6 +326,7 @@ DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;
 EOF
+                    unset MYSQL_PWD
 
         log_success "MariaDB instalado"
     fi
@@ -359,6 +362,7 @@ CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
 FLUSH PRIVILEGES;
 EOF
+                    unset MYSQL_PWD
 
     DB_HOST="localhost"
     DB_PORT="3306"

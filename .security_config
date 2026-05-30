@@ -1,0 +1,4 @@
+DOMAIN="https://erp.anderson00.cloudns.ch"
+NGINX_IP="172.16.0.96"
+DESKTOP_IP="172.16.254.248"
+APACHE_PORT="87"

@@ -1,6 +1,8 @@
 # Passo a Passo — Dolibarr ERP & CRM
 
 **Versão:** 23.0.2 | **PHP:** 8.4 | **Banco:** MariaDB 11.8+
+**Servidor:** 172.16.0.201 | **Domínio:** https://erp.anderson00.cloudns.ch
+**Proxy reverso:** 172.16.0.96 | **Porta Apache:** 87
 
 ---
 
@@ -9,7 +11,7 @@
 ### 1.1 Executar autoinstall.sh
 
 ```bash
-cd /root/dolisystem
+cd /home/erpuser/dolisystem
 ./autoinstall.sh install
 ```
 
@@ -21,18 +23,18 @@ O script oferece menu interativo com dois modos de banco:
 | **Remoto** | Banco em servidor separado — escolhe criar novo ou conectar a existente |
 
 O que o script faz:
-- Instala PHP 8.4 + módulos
+- Instala PHP 8.4 + módulos (apenas FPM, sem mod-php)
 - Instala e configura MariaDB (modo local) ou testa conectividade (modo remoto)
-- Configura Apache com headers de segurança + CSP para Tailwind CSS CDN
+- Configura Apache na porta **87** com handler **proxy_fcgi** (socket FPM), **RemoteIP** (TrustedProxy 172.16.0.96)
 - Baixa Dolibarr 23.0.2 para `/var/www/dolibarr-23.0.2`
 - Configura timezone `America/Sao_Paulo` (OS + php.ini)
-- Configura permissões
-- Configura firewall (UFW)
+- Cria pool FPM **dolibarr** rodando como usuário **erpuser**
+- Configura nftables (SSH restrito a IP admin, porta 87 restrita ao proxy)
 - Gera `.dolibarr_db_credentials` com dados de conexão
 
 ### 1.2 Finalizar via Navegador
 
-1. Abra: `http://<IP>/install/`
+1. Acesse: `https://erp.anderson00.cloudns.ch/install/`
 2. Siga o instalador web
 3. Se banco remoto já existe, escolha **"Conectar a banco existente"** — o instalador não destrói dados
 4. Anote a senha do admin
@@ -42,8 +44,30 @@ O que o script faz:
 ```bash
 rm -rf /var/www/dolibarr-23.0.2/htdocs/install/
 touch /var/www/dolibarr-23.0.2/htdocs/documents/install.lock
-chown www-data:www-data /var/www/dolibarr-23.0.2/htdocs/documents/install.lock
 ```
+
+### 1.4 Hardening de Segurança
+
+```bash
+cd /home/erpuser/dolisystem
+./security.sh
+```
+
+O script pergunta interativamente as variáveis de rede. Para execução silenciosa:
+```bash
+./security.sh --domain https://meudominio.com --nginx-ip 10.0.0.1 --desktop-ip 203.0.113.50
+```
+
+O que o script faz:
+- Pool FPM **dolibarr** (user erpuser) com open_basedir, disable_functions, session hardening
+- Apache na porta **87**, handler **proxy_fcgi**, **RemoteIP**, sem security headers
+- **nftables** (SSH + porta 87 restritos)
+- **fail2ban** com jails apache-auth + apache-dolibarr-login
+- Hardening de permissões (root:www-data, erpuser:erpuser, root:erpuser)
+- Remove arquivos de debug
+- Remove `libapache2-mod-php` (desnecessário)
+
+> **Idempotente:** Pode rodar quantas vezes quiser. Primeira execução é interativa, as seguintes usam cache em `.security_config`.
 
 ---
 
@@ -66,7 +90,9 @@ O script faz:
 - Configura PDF: logo 13mm altura, molduras com cantos arredondados
 - Insere configurações no banco (via `MYSQL_PWD`, nunca `-p` na CLI)
 - Se banco remoto detectado, instala temporariamente `default-mysql-client`, executa SQL, remove o cliente
-- Reinicia Apache no final
+- Aplica hardening de permissões: `root:www-data` (arquivos), `erpuser:erpuser` (documents), `root:erpuser` (conf.php)
+- Reescreve VirtualHost (porta 87, proxy_fcgi, RemoteIP, sem security headers)
+- Reinicia PHP-FPM + Apache no final
 
 ### 2.2 O que o Anti-Fingerprinting Remove
 
@@ -116,10 +142,17 @@ Ativa módulos Dolibarr via banco de dados (sem interface web).
 ## 4. Comandos de Gestão
 
 ```bash
+# Gestão via autoinstall.sh
 ./autoinstall.sh status     # Ver status dos serviços
-./autoinstall.sh restart    # Reiniciar Apache + MariaDB
+./autoinstall.sh restart    # Reiniciar Apache + PHP-FPM
 ./autoinstall.sh backup     # Backup manual do banco
 ./autoinstall.sh update     # Atualizar (download + backup automático)
+
+# Gestão manual de serviços
+systemctl restart apache2         # Apache (porta 87)
+systemctl restart php8.4-fpm      # PHP-FPM (pools www + dolibarr)
+systemctl restart fail2ban        # fail2ban
+/usr/sbin/nft -f /etc/nftables.conf  # Recarregar firewall
 ```
 
 ---
@@ -156,42 +189,168 @@ Sem shell — apenas FTP + phpMyAdmin.
 
 ---
 
-## 7. Estrutura de Arquivos
+## 6. Arquitetura da Instalação
+
+### 6.1 Topologia de Rede
+
+```
+Internet → nginx (172.16.0.96) [TLS termination]
+                ↓ porta 87 (nftables permite só do proxy)
+           Apache (172.16.0.201:87)
+                ↓ proxy_fcgi (socket)
+           PHP-FPM pool dolibarr (user: erpuser)
+                ↓
+           MariaDB (172.16.0.200:3306)
+```
+
+### 6.2 Mapa de Portas
+
+| Porta | Serviço | Restrito a |
+|-------|---------|-----------|
+| 22/tcp | SSH | 172.16.254.248 |
+| 87/tcp | Apache (Dolibarr) | 172.16.0.96 (nginx) |
+| 443/tcp | Apache (não usado, nftables bloqueia) | — |
+| 3306/tcp | MariaDB | Apenas no servidor DB |
+
+### 6.3 Configuração de Proxy Reverso (nginx em 172.16.0.96)
+
+O nginx deve:
+- Terminar TLS (certificado SSL)
+- Encaminhar para `http://172.16.0.201:87`
+- Adicionar header `X-Forwarded-For` com IP real do cliente
+- Configurar HSTS
+
+---
+
+## 7. Segurança (Hardening Aplicado)
+
+### 7.1 Pool FPM Dolibarr
+
+Arquivo: `/etc/php/8.4/fpm/pool.d/dolibarr.conf`
+
+| Diretiva | Valor | Finalidade |
+|----------|-------|------------|
+| `user/group` | `erpuser` | FPM roda como usuário não-privilegiado |
+| `listen` | `/run/php/php8.4-dolibarr.sock` | Socket exclusivo |
+| `open_basedir` | `htdocs:documents:/tmp` | Impede file inclusion fora do escopo |
+| `disable_functions` | `shell_exec,system,passthru,show_source` | Bloqueia execução de comandos perigosos |
+| `allow_url_fopen` | `Off` | Impede SSRF via fopen remoto |
+| `session.use_strict_mode` | `1` | Previne session fixation |
+| `session.cookie_httponly` | `1` | Cookies JS não acessam sessão |
+| `session.cookie_secure` | `1` | Cookies só em HTTPS |
+| `session.cookie_samesite` | `Lax` | Protege contra CSRF |
+
+### 7.2 Apache
+
+Arquivo: `/etc/apache2/sites-available/dolibarr.conf`
+
+| Item | Valor |
+|------|-------|
+| Porta | 87 (`Listen 87` em ports.conf) |
+| Handler | `proxy_fcgi` (socket dolibarr) — sem mod-php |
+| RemoteIP | `X-Forwarded-For` + TrustedProxy `172.16.0.96` |
+| ServerTokens | `Prod` (oculta versão) |
+| ServerSignature | `Off` |
+| Permissions-Policy | `camera=(), microphone=(), geolocation=(), payment=()` |
+| Security headers | Removidos (nginx gerencia) |
+| API `/api/` | Restrita a `127.0.0.1 ::1 172.16.0.96` |
+
+### 7.3 Permissões de Arquivos
+
+| Caminho | Proprietário | Permissão |
+|---------|-------------|-----------|
+| `htdocs/` (arquivos PHP) | `root:www-data` | 644 |
+| `htdocs/` (diretórios) | `root:www-data` | 755 |
+| `documents/` | `erpuser:erpuser` | 750 (www-data lê via grupo erpuser) |
+| `conf/conf.php` | `root:erpuser` | 640 |
+
+### 7.4 Firewall (nftables)
+
+Arquivo: `/etc/nftables.conf`
+
+```bash
+# Ver regras ativas
+nft list ruleset
+```
+
+Regras:
+- SSH (22) apenas de `<DESKTOP_IP>`
+- Apache (87) apenas de `<NGINX_IP>` (172.16.0.96)
+- Todo resto bloqueado com log
+
+### 7.5 fail2ban
+
+Jails ativos:
+
+| Jail | Filter | Log | maxretry | bantime |
+|------|--------|-----|----------|---------|
+| `apache-auth` | apache-auth | `/var/log/apache2/dolibarr-error.log` | 5 | 1h |
+| `apache-dolibarr-login` | apache-dolibarr-login | `/var/log/apache2/dolibarr-error.log` | 5 | 1h |
+| `sshd` | sshd | `/var/log/auth.log` | 5 | 1h |
+
+---
+
+## 8. Estrutura de Arquivos
 
 ```
 /var/www/dolibarr-23.0.2/
 ├── htdocs/
-│   ├── conf/            # Configurações (protegido)
-│   ├── documents/       # Arquivos uploadados + install.lock
-│   └── theme/
-│       └── modern_dark/ # Tema customizado
-/root/dolisystem/
-├── autoinstall.sh       # Instalação (ex-startup_v2)
-├── custom.sh            # Customização + anti-fingerprinting (ex-migrate_v2)
-├── activate_modules_v2.sh
+│   ├── conf/conf.php       # Configurações (root:erpuser 640)
+│   ├── documents/          # Uploads (erpuser:erpuser 750)
+│   ├── api/                # API (restrita ao proxy)
+│   └── theme/modern_dark/  # Tema customizado
+/etc/
+├── apache2/
+│   ├── sites-available/dolibarr.conf  # VHost porta 87
+│   ├── ports.conf                     # Listen 87
+│   └── conf-enabled/security.conf     # ServerTokens Prod
+├── php/8.4/fpm/pool.d/dolibarr.conf   # Pool FPM dedicado
+├── nftables.conf                      # Firewall restritivo
+└── fail2ban/
+    ├── jail.local                     # Jails ativos
+    └── filter.d/apache-dolibarr-login.conf
+/home/erpuser/dolisystem/
+├── autoinstall.sh          # Instalação
+├── security.sh             # Hardening de segurança (pós-instalação)
+├── custom.sh               # Customização + anti-fingerprinting
+├── activate_modules_v2.sh  # Ativação de módulos
 ├── migrate_customizations_llxhq.sql
-├── ThemePack/           # Arquivos fonte copiados pelo custom.sh
-├── startup.md           # v1 arquivado (referência)
-├── migrate_customizations.md  # v1 arquivado
-└── activate_modules.md  # v1 arquivado
+├── ThemePack/              # Arquivos fonte copiados pelo custom.sh
+├── .security_config        # Cache de config do security.sh
+├── etc/Steps.md            # Esta documentação
+└── docs/CHANGES-2026-05-25.md  # Changelog completo
 ```
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Problema | Solução |
 |----------|---------|
-| HTTP 500 após custom.sh | `perl -pi -e` no `main.inc.php:1685` pode ter falhado — verifique `php -l /var/www/dolibarr-23.0.2/htdocs/main.inc.php` |
-| Banco remoto inacessível | `nc -zv -w5 <DB_HOST> 3306` ou `timeout 5 bash -c "echo > /dev/tcp/<DB_HOST>/3306"` |
-| Página branca | `tail /var/log/apache2/error.log` |
-| Permissão negada | `chown -R www-data:www-data /var/www/dolibarr-23.0.2` |
+| HTTP 500 | `systemctl status php8.4-fpm` + `journalctl -u php8.4-fpm --no-pager \| tail -20` |
+| Apache não sobe | `/usr/sbin/apachectl configtest` e `journalctl -u apache2 --no-pager \| tail -20` |
+| Banco remoto inacessível | `nc -zv -w5 172.16.0.200 3306` ou `timeout 5 bash -c "echo > /dev/tcp/172.16.0.200/3306"` |
+| Página branca | `tail /var/log/apache2/dolibarr-error.log` |
+| Permissão negada | `chown -R erpuser:erpuser /var/www/dolibarr-23.0.2/htdocs/documents` |
 | Tabela em falta | Verificar se `custom.sh` rodou após `install.php` (SKIP_SQL guard) |
+| fail2ban não bane | `fail2ban-client status apache-dolibarr-login` + verificar logpath |
+| nftables bloqueando acesso | `nft list ruleset` e verificar IPs permitidos |
 
-### Fix manual do meta author (se necessário)
+### Comandos de Diagnóstico Rápido
 
 ```bash
-sed -i "1685s/.*/\tprint '<meta name=\"author\" content=\"'.getDolGlobalString('MAIN_APPLICATION_TITLE', '').'\">' .\"\\\\n\";/" /var/www/dolibarr-23.0.2/htdocs/main.inc.php && systemctl restart apache2
-```
+# Ver portas ouvindo
+ss -tlnp | grep -E "87|22"
 
-> Prefira `perl -pi -e` ao invés de `sed` para strings PHP com aspas — sed quebrou duas vezes neste caso.
+# Ver FPM pools ativos
+ps aux | grep "php-fpm"
+
+# Ver regras do firewall
+nft list ruleset
+
+# Ver jails fail2ban
+fail2ban-client status
+
+# Testar PHP via Apache
+curl -I http://localhost:87/
+```
