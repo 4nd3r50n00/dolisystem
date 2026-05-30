@@ -378,17 +378,7 @@ EOSQL
 echo "Configurações de banco de dados aplicadas."
 $DB_CMD <<'EOSQL'
 
--- Verificar e criar llx_categorie_propal se não existir
-CREATE TABLE IF NOT EXISTS llx_categorie_propal (
-fk_categorie INTEGER NOT NULL,
-fk_propal INTEGER NOT NULL,
-import_key VARCHAR(14) DEFAULT NULL,
-PRIMARY KEY (fk_categorie, fk_propal),
-KEY idx_llx_categorie_propal_fk_propal (fk_propal),
-KEY idx_llx_categorie_propal_fk_categorie (fk_categorie)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Criar tabela de categorias para pedidos de venda (faltava)
+-- Criar tabelas de categorias (pivot) que o ModuleBuilder não cria automaticamente
 CREATE TABLE IF NOT EXISTS llx_categorie_order (
 fk_categorie INTEGER NOT NULL,
 fk_order INTEGER NOT NULL,
@@ -396,6 +386,69 @@ import_key VARCHAR(14) DEFAULT NULL,
 PRIMARY KEY (fk_categorie, fk_order),
 KEY idx_llx_categorie_order_fk_order (fk_order),
 KEY idx_llx_categorie_order_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_warehouse (
+fk_categorie INTEGER NOT NULL,
+fk_warehouse INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_warehouse),
+KEY idx_llx_categorie_warehouse_fk_warehouse (fk_warehouse),
+KEY idx_llx_categorie_warehouse_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_fichinter (
+fk_categorie INTEGER NOT NULL,
+fk_fichinter INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_fichinter),
+KEY idx_llx_categorie_fichinter_fk_fichinter (fk_fichinter),
+KEY idx_llx_categorie_fichinter_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_invoice (
+fk_categorie INTEGER NOT NULL,
+fk_invoice INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_invoice),
+KEY idx_llx_categorie_invoice_fk_invoice (fk_invoice),
+KEY idx_llx_categorie_invoice_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_supplier_proposal (
+fk_categorie INTEGER NOT NULL,
+fk_supplier_proposal INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_supplier_proposal),
+KEY idx_llx_categorie_supplier_proposal_fk_proposal (fk_supplier_proposal),
+KEY idx_llx_categorie_supplier_proposal_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_project_task (
+fk_categorie INTEGER NOT NULL,
+fk_project_task INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_project_task),
+KEY idx_llx_categorie_project_task_fk_task (fk_project_task),
+KEY idx_llx_categorie_project_task_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_website_page (
+fk_categorie INTEGER NOT NULL,
+fk_website_page INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_website_page),
+KEY idx_llx_categorie_website_page_fk_page (fk_website_page),
+KEY idx_llx_categorie_website_page_fk_categorie (fk_categorie)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_categorie_ticket (
+fk_categorie INTEGER NOT NULL,
+fk_ticket INTEGER NOT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+PRIMARY KEY (fk_categorie, fk_ticket),
+KEY idx_llx_categorie_ticket_fk_ticket (fk_ticket),
+KEY idx_llx_categorie_ticket_fk_categorie (fk_categorie)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Criar tabela do módulo Knowledge Management (ModuleBuilder não gera SQLs)
