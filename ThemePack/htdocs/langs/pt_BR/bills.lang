@@ -1,1 +1,2 @@
 ErrorInvoiceOfThisTypeMustBePositive=Erro. Este tipo de fatura deve ter um valor excluindo imposto positivo (ou nulo)
+ConfirmCustomerPayment=Você confirma essa entrada de pagamento para <b>%s</b>?
