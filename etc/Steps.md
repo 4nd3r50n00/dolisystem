@@ -76,7 +76,7 @@ O que o script faz:
 ### 2.1 Executar custom.sh
 
 ```bash
-cd /root/dolisystem
+cd /home/erpuser/dolisystem
 ./custom.sh
 ```
 
@@ -131,7 +131,7 @@ Adicionado em `functions.lib.php`: BRL→dollar-sign, EUR→euro-sign, GBP→pou
 ## 3. Ativação de Módulos
 
 ```bash
-cd /root/dolisystem
+cd /home/erpuser/dolisystem
 ./activate_modules_v2.sh
 ```
 

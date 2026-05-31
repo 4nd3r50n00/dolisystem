@@ -451,6 +451,52 @@ KEY idx_llx_categorie_ticket_fk_ticket (fk_ticket),
 KEY idx_llx_categorie_ticket_fk_categorie (fk_categorie)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Criar tabelas do módulo Inventory (ModuleBuilder não gera SQLs)
+CREATE TABLE IF NOT EXISTS llx_inventory (
+rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
+ref VARCHAR(64) NOT NULL,
+entity INTEGER NOT NULL DEFAULT 1,
+title VARCHAR(255) DEFAULT NULL,
+fk_warehouse INTEGER DEFAULT NULL,
+fk_product INTEGER DEFAULT NULL,
+categories_product VARCHAR(255) DEFAULT NULL,
+date_inventory DATETIME DEFAULT NULL,
+date_creation DATETIME NOT NULL,
+tms TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+date_validation DATETIME DEFAULT NULL,
+fk_user_creat INTEGER NOT NULL,
+fk_user_modif INTEGER DEFAULT NULL,
+fk_user_valid INTEGER DEFAULT NULL,
+import_key VARCHAR(14) DEFAULT NULL,
+status INTEGER NOT NULL DEFAULT 0,
+KEY idx_inventory_rowid (rowid),
+KEY idx_inventory_ref (ref),
+KEY idx_inventory_entity (entity),
+KEY idx_inventory_fk_warehouse (fk_warehouse),
+KEY idx_inventory_fk_product (fk_product),
+KEY idx_inventory_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS llx_inventorydet (
+rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
+fk_inventory INTEGER NOT NULL,
+fk_warehouse INTEGER DEFAULT NULL,
+fk_product INTEGER DEFAULT NULL,
+batch VARCHAR(255) DEFAULT NULL,
+datec DATETIME NOT NULL,
+tms TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+qty_stock DOUBLE DEFAULT NULL,
+qty_view DOUBLE DEFAULT NULL,
+qty_regulated DOUBLE DEFAULT NULL,
+pmp_real DOUBLE DEFAULT NULL,
+pmp_expected DOUBLE DEFAULT NULL,
+KEY idx_inventorydet_rowid (rowid),
+KEY idx_inventorydet_fk_inventory (fk_inventory),
+KEY idx_inventorydet_fk_warehouse (fk_warehouse),
+KEY idx_inventorydet_fk_product (fk_product),
+KEY idx_inventorydet_batch (batch)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Criar tabela do módulo Knowledge Management (ModuleBuilder não gera SQLs)
 CREATE TABLE IF NOT EXISTS llx_knowledgemanagement_knowledgerecord (
 rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
