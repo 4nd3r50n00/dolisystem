@@ -497,6 +497,35 @@ KEY idx_inventorydet_fk_product (fk_product),
 KEY idx_inventorydet_batch (batch)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Criar tabela de dicionário contábil (c_accounting_category)
+CREATE TABLE IF NOT EXISTS llx_c_accounting_category (
+rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
+code VARCHAR(32) DEFAULT NULL,
+label VARCHAR(255) DEFAULT NULL,
+range_account VARCHAR(255) DEFAULT NULL,
+sens INTEGER DEFAULT 0,
+category_type INTEGER DEFAULT 0,
+formula VARCHAR(255) DEFAULT NULL,
+position INTEGER DEFAULT 0,
+fk_country INTEGER DEFAULT 0,
+active INTEGER DEFAULT 1,
+entity INTEGER DEFAULT 1,
+import_key VARCHAR(14) DEFAULT NULL,
+KEY idx_c_accounting_category_rowid (rowid),
+KEY idx_c_accounting_category_code (code),
+KEY idx_c_accounting_category_fk_country (fk_country),
+KEY idx_c_accounting_category_category_type (category_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO llx_c_accounting_category (code, label, range_account, category_type, formula, position, fk_country, active, entity) VALUES
+('ACTIVE', 'Ativo', '1', 0, '', 10, 56, 1, 1),
+('PASSIVE', 'Passivo', '2', 0, '', 20, 56, 1, 1),
+('EQUITY', 'Patrimônio Líquido', '3', 0, '', 30, 56, 1, 1),
+('INCOME', 'Receitas', '4', 0, '', 40, 56, 1, 1),
+('EXPENSE', 'Despesas', '5', 0, '', 50, 56, 1, 1),
+('DEBIT', 'Débito', '', 1, '', 60, 56, 1, 1),
+('CREDIT', 'Crédito', '', 2, '', 70, 56, 1, 1);
+
 -- Criar tabela do módulo Knowledge Management (ModuleBuilder não gera SQLs)
 CREATE TABLE IF NOT EXISTS llx_knowledgemanagement_knowledgerecord (
 rowid INTEGER AUTO_INCREMENT PRIMARY KEY,
