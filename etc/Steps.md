@@ -354,3 +354,68 @@ fail2ban-client status
 # Testar PHP via Apache
 curl -I http://localhost:87/
 ```
+
+## 10. PIX (Pagamento Instantâneo Brasileiro)
+
+O PIX foi implementado como forma de pagamento customizada no Dolibarr. O fluxo completo envolve:
+
+### 10.1 Banco de Dados
+
+Colunas adicionadas em `llx_bank_account` via `custom.sh`:
+
+```sql
+ALTER TABLE llx_bank_account
+  ADD COLUMN IF NOT EXISTS tipo_chave_pix ENUM('CPF','CNPJ','EMAIL','TELEFONE','ALEATORIA') NULL,
+  ADD COLUMN IF NOT EXISTS chave_pix VARCHAR(100) NULL;
+```
+
+Forma de pagamento `PIX` inserida em `llx_c_paiement` (criada manualmente via Módulos → Formas de Pagamento).
+
+### 10.2 Patches em Core Files
+
+Todas as modificações são aplicadas pelo script `apply_patches.php`, chamado pelo `custom.sh`:
+
+| Arquivo | O quê |
+|---------|-------|
+| `compta/bank/class/account.class.php` | Propriedades `$chave_pix`, `$tipo_chave_pix`; SELECT no `fetch()`; INSERT no `create()`; SET no `update()` |
+| `compta/bank/card.php` | Campos de input (texto + select) nos formulários CREATE/EDIT; exibição no VIEW; POST handling |
+| `core/modules/facture/doc/pdf_master_bill.modules.php` | `loadLangs` inclui `"banks"`; bloco PIX no `drawInfoTable()` exibe chave + tipo |
+
+### 10.3 Fluxo Completo
+
+```
+Conta Bancária (card.php)
+  ├── Cadastrar chave PIX + tipo (CPF/CNPJ/EMAIL/TELEFONE/ALEATÓRIA)
+  ├── Salva via Account::update() → colunas chave_pix, tipo_chave_pix
+  │
+Fatura (facture.php)
+  ├── Selecionar forma de pagamento = PIX
+  ├── Vincular conta bancária (fk_account)
+  │
+PDF (pdf_master_bill.modules.php)
+  └── mode_reglement_code == 'PIX'
+      └── Account::fetch() → $account->chave_pix
+      └── Renderiza: Banco, Titular, Chave PIX (Tipo)
+```
+
+### 10.4 Verificação
+
+1. Acesse **Contas Bancárias → [escolha uma conta] → Editar**
+2. Preencha **Chave PIX** e **Tipo de Chave PIX**, salve
+3. Crie uma fatura com forma de pagamento **PIX** e conta bancária vinculada
+4. Gere o PDF — deve aparecer o bloco "Pagamento via PIX para a seguinte conta:" com banco, titular e chave
+
+### 10.5 Traduções (pt_BR)
+
+Arquivo: `htdocs/langs/pt_BR/banks.lang`
+
+```
+ChavePix=Chave PIX
+TipoChavePix=Tipo de Chave PIX
+TipoChavePixCPF=CPF
+TipoChavePixCNPJ=CNPJ
+TipoChavePixEMAIL=E-mail
+TipoChavePixTELEFONE=Telefone
+TipoChavePixALEATORIA=Aleatória
+PaymentByPixOnThisBankAccount=Pagamento via PIX para a seguinte conta:
+```
