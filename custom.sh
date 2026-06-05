@@ -744,6 +744,19 @@ echo "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAEElEQVR42mP8z8DwHw4GAwCiRA
 cp -f /tmp/favicon_empty.png ${DOLIBARR_DIR}/htdocs/theme/img/favicon.ico 2>/dev/null || true
 cp -f /tmp/favicon_empty.png ${DOLIBARR_DIR}/htdocs/theme/modern_dark/img/favicon.ico 2>/dev/null || true
 
+# --- Account class (PIX fields) ---
+
+# --- PIX patches: Account class + card.php ---
+# Aplica patches para chave_pix/tipo_chave_pix em account.class.php e card.php
+PHP_PATCH_SCRIPT=$(dirname "$0")/apply_patches.php
+if [ -f "$PHP_PATCH_SCRIPT" ]; then
+  # Backup dos arquivos antes de modificar
+  cp -f "${DOLIBARR_DIR}/htdocs/compta/bank/class/account.class.php" "${DOLIBARR_DIR}/htdocs/compta/bank/class/account.class.php.bak" 2>/dev/null || true
+  cp -f "${DOLIBARR_DIR}/htdocs/compta/bank/card.php" "${DOLIBARR_DIR}/htdocs/compta/bank/card.php.bak" 2>/dev/null || true
+  
+  php "$PHP_PATCH_SCRIPT" "${DOLIBARR_DIR}"
+fi
+
 # --- PDFs master ---
 
 # Trocar SetCreator de "Dolibarr DOL_VERSION" para "$mysoc->name"
@@ -757,16 +770,29 @@ sed -i 's/\$pdf->SetCreator("Dolibarr "\.DOL_VERSION)/$pdf->SetCreator($mysoc->n
 fi
 done
 
+# Adicionar "banks" ao loadLangs do PDF master_bill para traducoes PIX
+MASTER_BILL_PDF=${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php
+if [ -f "$MASTER_BILL_PDF" ]; then
+  cp -f "$MASTER_BILL_PDF" "${MASTER_BILL_PDF}.bak"
+  grep -q '"banks"' "$MASTER_BILL_PDF" || sed -i 's/"main", "bills", "products", "dict", "companies", "compta"/"main", "bills", "products", "dict", "companies", "compta", "banks"/g' "$MASTER_BILL_PDF"
+fi
+
 # Corrigir permissões dos arquivos modificados por sed
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/main.inc.php
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php
 chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/tpl/passwordforgotten.tpl.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/compta/bank/class/account.class.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/compta/bank/card.php
+chown www-data:www-data ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php
 
 # Limpar backups
 rm -f ${DOLIBARR_DIR}/htdocs/main.inc.php.bak
 rm -f ${DOLIBARR_DIR}/htdocs/core/tpl/login.tpl.php.bak
 rm -f ${DOLIBARR_DIR}/htdocs/core/lib/company.lib.php.bak
+rm -f ${DOLIBARR_DIR}/htdocs/compta/bank/class/account.class.php.bak
+rm -f ${DOLIBARR_DIR}/htdocs/compta/bank/card.php.bak
+rm -f ${DOLIBARR_DIR}/htdocs/core/modules/facture/doc/pdf_master_bill.modules.php.bak
 
 echo "Anti-fingerprinting aplicado."
 
