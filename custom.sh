@@ -211,6 +211,9 @@ $DB_CMD -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, no
 echo "[23/27] Configurando menu: ícones com texto abaixo..."
 $DB_CMD -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('THEME_TOPMENU_DISABLE_IMAGE', '3', 1, 'chaine', 0, 'Menu icones+texto via migrate') ON DUPLICATE KEY UPDATE value='3';" 2>/dev/null
 
+echo "[23.5/27] Aplicando CSS customizado para tabelas largas..."
+$DB_CMD -e "INSERT IGNORE INTO llx_const (name, value, entity, type, visible, note) VALUES ('MAIN_IHM_CUSTOM_CSS', 'div.fiche { max-width: 1195px; width: 100%; }', 1, 'chaine', 0, 'Fix tabelas largas (orcamento)') ON DUPLICATE KEY UPDATE value='div.fiche { max-width: 1195px; width: 100%; }';" 2>/dev/null
+
 echo "[24/27] Ativando modelos PDF master..."
 $DB_CMD <<'EOSQL'
 -- Inserir modelos PDF master na tabela de registros
